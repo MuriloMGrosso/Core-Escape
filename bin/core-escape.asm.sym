@@ -1,0 +1,177 @@
+--- Symbol List (sorted by symbol)
+0.FREE_BYTES             0000                  
+0.POS                    000a                  
+1.CLEAR_STACK            f005              (R )
+2.CYCLES                 0004              (R )
+AUD_VOL                  0006              (R )
+AUDC0                    0015              (R )
+AUDC1                    0016              (R )
+AUDF0                    0017              (R )
+AUDF1                    0018              (R )
+AUDV0                    0019              (R )
+AUDV1                    001a              (R )
+BG_COL                   0002              (R )
+COL_SOUND                0008              (R )
+collision                f263              (R )
+COLUBK                   0009              (R )
+COLUP0                   0006              (R )
+COLUP1                   0007                  
+COLUPF                   0008              (R )
+CTRLPF                   000a                  
+CXBLPF                   0006                  
+CXCLR                    002c              (R )
+CXM0FB                   0004                  
+CXM0P                    0000                  
+CXM1FB                   0005                  
+CXM1P                    0001                  
+CXP0FB                   0002              (R )
+CXP1FB                   0003                  
+CXPPMM                   0007                  
+darkBG                   f189              (R )
+DEAD_PLAYER_COL          0002              (R )
+difLavaScreen            f332              (R )
+digitIdx0                008c              (R )
+digitIdx1                008d              (R )
+digitIdx2                008e              (R )
+digitIdx3                008f              (R )
+digitPF0                 0090              (R )
+digitPF1                 0095              (R )
+digitPF2                 009a              (R )
+DIGITS                   f41c              (R )
+DIGITS_REV               f44e              (R )
+digitTemp                009f              (R )
+divideTileHeight         f344              (R )
+dontDrawnLava            f213              (R )
+dontIncLava              f06e              (R )
+dontLavaScreen           f05e              (R )
+DOWN                     0020              (R )
+drawField                f1c7              (R )
+drawPlayer               f1ed              (R )
+drawScore                f154              (R )
+ENABL                    001f                  
+ENAM0                    001d                  
+ENAM1                    001e                  
+endDrawfield             f218              (R )
+GRP0                     001b              (R )
+GRP1                     001c                  
+HMBL                     0024                  
+HMCLR                    002b                  
+HMM0                     0022                  
+HMM1                     0023                  
+HMOVE                    002a              (R )
+HMP0                     0020              (R )
+HMP1                     0021                  
+hPlayer                  f19c              (R )
+INPT0                    0008                  
+INPT1                    0009                  
+INPT2                    000a                  
+INPT3                    000b                  
+INPT4                    000c                  
+INPT5                    000d                  
+interruptVectors         fffa                  
+INTIM                    0284                  
+isPlayerDead             0085              (R )
+LAVA_COL_0               0038              (R )
+LAVA_COL_1               0028              (R )
+LAVA_TIMER               0002              (R )
+lavaColor                00a2              (R )
+lavaHeight               00a0              (R )
+lavaScreen               00a3              (R )
+lavaTimer                00a1              (R )
+LEFT                     0040              (R )
+LETTERS                  f480              (R )
+movement                 f2db                  
+multFive                 f405              (R )
+nextScreen               f27e              (R )
+NO_ILLEGAL_OPCODES       0000 ????         (R )
+noCollision              f29f              (R )
+notDecrement             f0f2              (R )
+notIncrement             f0cc              (R )
+notInLava                f33f              (R )
+notMoveSound             f2d1              (R )
+notMovingDown            f305              (R )
+notMovingLeft            f2f9              (R )
+notMovingRight           f2ea              (R )
+notScreenInLava          f1c1              (R )
+NUSIZ0                   0004                  
+NUSIZ1                   0005                  
+otherLavaCol             f1bf              (R )
+otherLavaColor           f211              (R )
+overscan                 f228              (R )
+PF0                      000d              (R )
+PF0_DATA                 f485              (R )
+PF1                      000e              (R )
+PF1_DATA                 f4cd              (R )
+PF2                      000f              (R )
+PF2_DATA                 f515              (R )
+PF_COL                   0000              (R )
+PLAYER_COL               000e              (R )
+PLAYER_H                 000d              (R )
+PLAYER_SPR               f40f              (R )
+playerMove               0084              (R )
+playerSprite             f1f7              (R )
+playerX                  0080              (R )
+playerY                  0081              (R )
+prevCollided             0086              (R )
+prevPlayerX              0082              (R )
+prevPlayerY              0083              (R )
+prevScore                008b              (R )
+prevScreen               f290              (R )
+REFP0                    000b              (R )
+REFP1                    000c                  
+RESBL                    0014                  
+reset                    f000              (R )
+RESM0                    0012                  
+RESM1                    0013                  
+RESMP0                   0028                  
+RESMP1                   0029                  
+RESP0                    0010              (R )
+RESP1                    0011                  
+RIGHT                    0080              (R )
+RSYNC                    0003                  
+score                    008a              (R )
+scoreChanged             f096                  
+scoreDigits              f0f6              (R )
+scoreNotChanged          f0a2              (R )
+scoreSmaller             f0a0              (R )
+screen                   0089              (R )
+SCREEN_H                 00c0              (R )
+screenOffset             0088              (R )
+skipInput                f2c5              (R )
+skipLavaSound            f086              (R )
+skipMovement             f30e              (R )
+startFrame               f02e              (R )
+STT_SCORE                0005              (R )
+STT_X                    0048              (R )
+STT_Y                    004a              (R )
+SWACNT                   0281                  
+SWBCNT                   0283                  
+SWCHA                    0280              (R )
+SWCHB                    0282              (R )
+T1024T                   0297                  
+temp                     00a4              (R )
+TIA_BASE_ADDRESS         0000              (R )
+TIA_BASE_READ_ADDRESS    0000              (R )
+TIA_BASE_WRITE_ADDRESS   0000              (R )
+TILE_H                   0010              (R )
+TILES_COUNT              000b              (R )
+tileTimer                0087              (R )
+TIM1T                    0294                  
+TIM64T                   0296                  
+TIM8T                    0295                  
+TIMINT                   0285                  
+UP                       0010              (R )
+VBLANK                   0001              (R )
+VDELBL                   0027                  
+VDELP0                   0025                  
+VDELP1                   0026                  
+VERSION_MACRO            006d                  
+VERSION_VCS              006a                  
+verticalBlank            f042              (R )
+VSYNC                    0000              (R )
+WSYNC                    0002              (R )
+X_MAX                    0096                  
+X_MIN                    0008                  
+Y_MAX                    00b4              (R )
+Y_MIN                    0006              (R )
+--- End of Symbol List.

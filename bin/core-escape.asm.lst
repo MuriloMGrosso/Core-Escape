@@ -1,0 +1,2187 @@
+------- FILE core-escape.asm LEVEL 1 PASS 2
+      1  10000 ????						;██████████████████████████████████████████████████████████████████████████████████████
+      2  10000 ????						;  ____			     ____						
+      3  10000 ????						; /\  _`\			    /\	_`\						
+      4  10000 ????						; \ \ \/\_\	___   _ __    __    \ \ \L\_\	 ____	 ___	 __	_____	   __	
+      5  10000 ????						;  \ \ \/_/_  / __`\/\`'__\/'__`\   \ \  _\L	/',__\	/'___\ /'__`\  /\ '__`\  /'__`\ 
+      6  10000 ????						;   \ \ \L\ \/\ \L\ \ \ \//\  __/    \ \ \L\ \/\__, `\/\ \__//\ \L\.\_\ \ \L\ \/\  __/ 
+      7  10000 ????						;    \ \____/\ \____/\ \_\\ \____\    \ \____/\/\____/\ \____\ \__/.\_\\ \ ,__/\ \____\
+      8  10000 ????						;     \/___/  \/___/  \/_/ \/____/	\/___/	\/___/	\/____/\/__/\/_/ \ \ \/  \/____/
+      9  10000 ????						;									  \ \_\ 	
+     10  10000 ????						;									   \/_/ 			   
+     11  10000 ????						;██████████████████████████████████████████████████████████████████████████████████████
+     12  10000 ????
+     13  10000 ????						; [Core Escape]
+     14  10000 ????						; Oh no! The lava is rising! Quick, you need to get out of here!
+     15  10000 ????						; In this action/adventure game, you'll need to climb caves, jungles and mountains to 
+     16  10000 ????						; keep your butt safe!
+     17  10000 ????						; How high can you reach?
+     18  10000 ????						;
+     19  10000 ????						; [Controls]
+     20  10000 ????						; 1) Joystick for movement.
+     21  10000 ????						; 2) Reset switch.
+     22  10000 ????						;
+     23  10000 ????						; [About]
+     24  10000 ????						; This is a fan made game for the Atari 2600. The game was build respecting the 4K 
+     25  10000 ????						; Atari cartridge limitation and can be played on a real console. You can also play it
+     26  10000 ????						; on an emulator like Stella.
+     27  10000 ????						; All the code bellow was provided by me - Murilo M. Grosso - and it's free to use.
+     28  10000 ????
+     29  10000 ????						;######################################################################################
+     30  10000 ????						;   _____	      _ 	  _	      
+     31  10000 ????						;  |_	 _|	     | |	 | |	      
+     32  10000 ????						;    | |  _ __   ___| |_   _  __| | ___  ___ 
+     33  10000 ????						;    | | | '_ \ / __| | | | |/ _` |/ _ \/ __|
+     34  10000 ????						;   _| |_| | | | (__| | |_| | (_| |  __/\__ \
+     35  10000 ????						;  |_____|_| |_|\___|_|\__,_|\__,_|\___||___/
+     36  10000 ????						;
+     37  10000 ????						;######################################################################################
+     38  10000 ????
+     39  10000 ????				       processor	6502
+------- FILE vcs.h LEVEL 2 PASS 2
+      0  10000 ????				       include	"vcs.h"
+      1  10000 ????						; VCS.H
+      2  10000 ????						; Version 1.06, 06/SEP/2020
+      3  10000 ????
+      4  10000 ????		00 6a	    VERSION_VCS =	106
+      5  10000 ????
+      6  10000 ????						; THIS IS *THE* "STANDARD" VCS.H
+      7  10000 ????						; THIS FILE IS EXPLICITLY SUPPORTED AS A DASM-PREFERRED COMPANION FILE
+      8  10000 ????						; The latest version can be found at https://dasm-assembler.github.io/
+      9  10000 ????						;
+     10  10000 ????						; This file defines hardware registers and memory mapping for the
+     11  10000 ????						; Atari 2600. It is distributed as a companion machine-specific support package
+     12  10000 ????						; for the DASM compiler. Updates to this file, DASM, and associated tools are
+     13  10000 ????						; available at at https://dasm-assembler.github.io/
+     14  10000 ????						;
+     15  10000 ????						; Many thanks to the people who have contributed. If you find an issue with the
+     16  10000 ????						; contents, or would like ot add something, please report as an issue at...
+     17  10000 ????						; https://github.com/dasm-assembler/dasm/issues
+     18  10000 ????
+     19  10000 ????						;
+     20  10000 ????						; Latest Revisions...
+     21  10000 ????						; 1.06  05/SEP/2020	 Modified header/license and links to new versions
+     22  10000 ????						; 1.05  13/NOV/2003	  - Correction to 1.04 - now functions as requested by MR.
+     23  10000 ????						;			  - Added VERSION_VCS equate (which will reflect 100x version #)
+     24  10000 ????						;			    This will allow conditional code to verify VCS.H being
+     25  10000 ????						;			    used for code assembly.
+     26  10000 ????						; 1.04  12/NOV/2003	 Added TIA_BASE_WRITE_ADDRESS and TIA_BASE_READ_ADDRESS for
+     27  10000 ????						;			 convenient disassembly/reassembly compatibility for hardware
+     28  10000 ????						;			 mirrored reading/writing differences.	This is more a
+     29  10000 ????						;			 readability issue, and binary compatibility with disassembled
+     30  10000 ????						;			 and reassembled sources.  Per Manuel Rotschkar's suggestion.
+     31  10000 ????						; 1.03  12/MAY/2003	 Added SEG segment at end of file to fix old-code compatibility
+     32  10000 ????						;			 which was broken by the use of segments in this file, as
+     33  10000 ????						;			 reported by Manuel Polik on [stella] 11/MAY/2003
+     34  10000 ????						; 1.02  22/MAR/2003	 Added TIMINT($285)
+     35  10000 ????						; 1.01				Constant offset added to allow use for 3F-style bankswitching
+     36  10000 ????						;						 - define TIA_BASE_ADDRESS as $40 for Tigervision carts, otherwise
+     37  10000 ????						;						   it is safe to leave it undefined, and the base address will
+     38  10000 ????						;						   be set to 0.  Thanks to Eckhard Stolberg for the suggestion.
+     39  10000 ????						;			    Note, may use -DLABEL=EXPRESSION to define TIA_BASE_ADDRESS
+     40  10000 ????						;			  - register definitions are now generated through assignment
+     41  10000 ????						;			    in uninitialised segments.	This allows a changeable base
+     42  10000 ????						;			    address architecture.
+     43  10000 ????						; 1.0	22/MAR/2003		Initial release
+     44  10000 ????
+     45  10000 ????
+     46  10000 ????						;-------------------------------------------------------------------------------
+     47  10000 ????
+     48  10000 ????						; TIA_BASE_ADDRESS
+     49  10000 ????						; The TIA_BASE_ADDRESS defines the base address of access to TIA registers.
+     50  10000 ????						; Normally 0, the base address should (externally, before including this file)
+     51  10000 ????						; be set to $40 when creating 3F-bankswitched (and other?) cartridges.
+     52  10000 ????						; The reason is that this bankswitching scheme treats any access to locations
+     53  10000 ????						; < $40 as a bankswitch.
+     54  10000 ????
+     55  10000 ????			   -	       IFNCONST	TIA_BASE_ADDRESS
+     56  10000 ????			   -TIA_BASE_ADDRESS =	0
+     57  10000 ????				       ENDIF
+     58  10000 ????
+     59  10000 ????						; Note: The address may be defined on the command-line using the -D switch, eg:
+     60  10000 ????						; dasm.exe code.asm -DTIA_BASE_ADDRESS=$40 -f3 -v5 -ocode.bin
+     61  10000 ????						; *OR* by declaring the label before including this file, eg:
+     62  10000 ????						; TIA_BASE_ADDRESS = $40
+     63  10000 ????						;   include "vcs.h"
+     64  10000 ????
+     65  10000 ????						; Alternate read/write address capability - allows for some disassembly compatibility
+     66  10000 ????						; usage ; to allow reassembly to binary perfect copies).  This is essentially catering
+     67  10000 ????						; for the mirrored ROM hardware registers.
+     68  10000 ????
+     69  10000 ????						; Usage: As per above, define the TIA_BASE_READ_ADDRESS and/or TIA_BASE_WRITE_ADDRESS
+     70  10000 ????						; using the -D command-line switch, as required.  If the addresses are not defined,
+     71  10000 ????						; they defaut to the TIA_BASE_ADDRESS.
+     72  10000 ????
+     73  10000 ????			   -	       IFNCONST	TIA_BASE_READ_ADDRESS
+     74  10000 ????			   -TIA_BASE_READ_ADDRESS =	TIA_BASE_ADDRESS
+     75  10000 ????				       ENDIF
+     76  10000 ????
+     77  10000 ????			   -	       IFNCONST	TIA_BASE_WRITE_ADDRESS
+     78  10000 ????			   -TIA_BASE_WRITE_ADDRESS =	TIA_BASE_ADDRESS
+     79  10000 ????				       ENDIF
+     80  10000 ????
+     81  10000 ????						;-------------------------------------------------------------------------------
+     82  10000 ????
+     83 U002d ????				      SEG.U	TIA_REGISTERS_WRITE
+     84 U0000					      ORG	TIA_BASE_WRITE_ADDRESS
+     85 U0000
+     86 U0000							; DO NOT CHANGE THE RELATIVE ORDERING OF REGISTERS!
+     87 U0000
+     88 U0000		       00	   VSYNC      ds	1	; $00	 0000 00x0   Vertical Sync Set-Clear
+     89 U0001		       00	   VBLANK     ds	1	; $01	 xx00 00x0   Vertical Blank Set-Clear
+     90 U0002		       00	   WSYNC      ds	1	; $02	 ---- ----   Wait for Horizontal Blank
+     91 U0003		       00	   RSYNC      ds	1	; $03	 ---- ----   Reset Horizontal Sync Counter
+     92 U0004		       00	   NUSIZ0     ds	1	; $04	 00xx 0xxx   Number-Size player/missle 0
+     93 U0005		       00	   NUSIZ1     ds	1	; $05	 00xx 0xxx   Number-Size player/missle 1
+     94 U0006		       00	   COLUP0     ds	1	; $06	 xxxx xxx0   Color-Luminance Player 0
+     95 U0007		       00	   COLUP1     ds	1	; $07	 xxxx xxx0   Color-Luminance Player 1
+     96 U0008		       00	   COLUPF     ds	1	; $08	 xxxx xxx0   Color-Luminance Playfield
+     97 U0009		       00	   COLUBK     ds	1	; $09	 xxxx xxx0   Color-Luminance Background
+     98 U000a		       00	   CTRLPF     ds	1	; $0A	 00xx 0xxx   Control Playfield, Ball, Collisions
+     99 U000b		       00	   REFP0      ds	1	; $0B	 0000 x000   Reflection Player 0
+    100 U000c		       00	   REFP1      ds	1	; $0C	 0000 x000   Reflection Player 1
+    101 U000d		       00	   PF0	      ds	1	; $0D	 xxxx 0000   Playfield Register Byte 0
+    102 U000e		       00	   PF1	      ds	1	; $0E	 xxxx xxxx   Playfield Register Byte 1
+    103 U000f		       00	   PF2	      ds	1	; $0F	 xxxx xxxx   Playfield Register Byte 2
+    104 U0010		       00	   RESP0      ds	1	; $10	 ---- ----   Reset Player 0
+    105 U0011		       00	   RESP1      ds	1	; $11	 ---- ----   Reset Player 1
+    106 U0012		       00	   RESM0      ds	1	; $12	 ---- ----   Reset Missle 0
+    107 U0013		       00	   RESM1      ds	1	; $13	 ---- ----   Reset Missle 1
+    108 U0014		       00	   RESBL      ds	1	; $14	 ---- ----   Reset Ball
+    109 U0015		       00	   AUDC0      ds	1	; $15	 0000 xxxx   Audio Control 0
+    110 U0016		       00	   AUDC1      ds	1	; $16	 0000 xxxx   Audio Control 1
+    111 U0017		       00	   AUDF0      ds	1	; $17	 000x xxxx   Audio Frequency 0
+    112 U0018		       00	   AUDF1      ds	1	; $18	 000x xxxx   Audio Frequency 1
+    113 U0019		       00	   AUDV0      ds	1	; $19	 0000 xxxx   Audio Volume 0
+    114 U001a		       00	   AUDV1      ds	1	; $1A	 0000 xxxx   Audio Volume 1
+    115 U001b		       00	   GRP0       ds	1	; $1B	 xxxx xxxx   Graphics Register Player 0
+    116 U001c		       00	   GRP1       ds	1	; $1C	 xxxx xxxx   Graphics Register Player 1
+    117 U001d		       00	   ENAM0      ds	1	; $1D	 0000 00x0   Graphics Enable Missle 0
+    118 U001e		       00	   ENAM1      ds	1	; $1E	 0000 00x0   Graphics Enable Missle 1
+    119 U001f		       00	   ENABL      ds	1	; $1F	 0000 00x0   Graphics Enable Ball
+    120 U0020		       00	   HMP0       ds	1	; $20	 xxxx 0000   Horizontal Motion Player 0
+    121 U0021		       00	   HMP1       ds	1	; $21	 xxxx 0000   Horizontal Motion Player 1
+    122 U0022		       00	   HMM0       ds	1	; $22	 xxxx 0000   Horizontal Motion Missle 0
+    123 U0023		       00	   HMM1       ds	1	; $23	 xxxx 0000   Horizontal Motion Missle 1
+    124 U0024		       00	   HMBL       ds	1	; $24	 xxxx 0000   Horizontal Motion Ball
+    125 U0025		       00	   VDELP0     ds	1	; $25	 0000 000x   Vertical Delay Player 0
+    126 U0026		       00	   VDELP1     ds	1	; $26	 0000 000x   Vertical Delay Player 1
+    127 U0027		       00	   VDELBL     ds	1	; $27	 0000 000x   Vertical Delay Ball
+    128 U0028		       00	   RESMP0     ds	1	; $28	 0000 00x0   Reset Missle 0 to Player 0
+    129 U0029		       00	   RESMP1     ds	1	; $29	 0000 00x0   Reset Missle 1 to Player 1
+    130 U002a		       00	   HMOVE      ds	1	; $2A	 ---- ----   Apply Horizontal Motion
+    131 U002b		       00	   HMCLR      ds	1	; $2B	 ---- ----   Clear Horizontal Move Registers
+    132 U002c		       00	   CXCLR      ds	1	; $2C	 ---- ----   Clear Collision Latches
+    133 U002d
+    134 U002d							;-------------------------------------------------------------------------------
+    135 U002d
+    136 U000e ????				      SEG.U	TIA_REGISTERS_READ
+    137 U0000					      ORG	TIA_BASE_READ_ADDRESS
+    138 U0000
+    139 U0000							;											bit 7	 bit 6
+    140 U0000		       00	   CXM0P      ds	1	; $00	     xx00 0000	     Read Collision  M0-P1   M0-P0
+    141 U0001		       00	   CXM1P      ds	1	; $01	     xx00 0000			     M1-P0   M1-P1
+    142 U0002		       00	   CXP0FB     ds	1	; $02	     xx00 0000			     P0-PF   P0-BL
+    143 U0003		       00	   CXP1FB     ds	1	; $03	     xx00 0000			     P1-PF   P1-BL
+    144 U0004		       00	   CXM0FB     ds	1	; $04	     xx00 0000			     M0-PF   M0-BL
+    145 U0005		       00	   CXM1FB     ds	1	; $05	     xx00 0000			     M1-PF   M1-BL
+    146 U0006		       00	   CXBLPF     ds	1	; $06	     x000 0000			     BL-PF   -----
+    147 U0007		       00	   CXPPMM     ds	1	; $07	     xx00 0000			     P0-P1   M0-M1
+    148 U0008		       00	   INPT0      ds	1	; $08	     x000 0000	     Read Pot Port 0
+    149 U0009		       00	   INPT1      ds	1	; $09	     x000 0000	     Read Pot Port 1
+    150 U000a		       00	   INPT2      ds	1	; $0A	     x000 0000	     Read Pot Port 2
+    151 U000b		       00	   INPT3      ds	1	; $0B	     x000 0000	     Read Pot Port 3
+    152 U000c		       00	   INPT4      ds	1	; $0C		x000 0000	 Read Input (Trigger) 0
+    153 U000d		       00	   INPT5      ds	1	; $0D		x000 0000	 Read Input (Trigger) 1
+    154 U000e
+    155 U000e							;-------------------------------------------------------------------------------
+    156 U000e
+    157 U0298 ????				      SEG.U	RIOT
+    158 U0280					      ORG	$280
+    159 U0280
+    160 U0280							; RIOT MEMORY MAP
+    161 U0280
+    162 U0280		       00	   SWCHA      ds	1	; $280      Port A data register for joysticks:
+    163 U0281							;			Bits 4-7 for player 1.  Bits 0-3 for player 2.
+    164 U0281
+    165 U0281		       00	   SWACNT     ds	1	; $281      Port A data direction register (DDR)
+    166 U0282		       00	   SWCHB      ds	1	; $282		Port B data (console switches)
+    167 U0283		       00	   SWBCNT     ds	1	; $283      Port B DDR
+    168 U0284		       00	   INTIM      ds	1	; $284		Timer output
+    169 U0285
+    170 U0285		       00	   TIMINT     ds	1	; $285
+    171 U0286
+    172 U0286							; Unused/undefined registers ($285-$294)
+    173 U0286
+    174 U0286		       00		      ds	1	; $286
+    175 U0287		       00		      ds	1	; $287
+    176 U0288		       00		      ds	1	; $288
+    177 U0289		       00		      ds	1	; $289
+    178 U028a		       00		      ds	1	; $28A
+    179 U028b		       00		      ds	1	; $28B
+    180 U028c		       00		      ds	1	; $28C
+    181 U028d		       00		      ds	1	; $28D
+    182 U028e		       00		      ds	1	; $28E
+    183 U028f		       00		      ds	1	; $28F
+    184 U0290		       00		      ds	1	; $290
+    185 U0291		       00		      ds	1	; $291
+    186 U0292		       00		      ds	1	; $292
+    187 U0293		       00		      ds	1	; $293
+    188 U0294
+    189 U0294		       00	   TIM1T      ds	1	; $294		set 1 clock interval
+    190 U0295		       00	   TIM8T      ds	1	; $295      set 8 clock interval
+    191 U0296		       00	   TIM64T     ds	1	; $296      set 64 clock interval
+    192 U0297		       00	   T1024T     ds	1	; $297      set 1024 clock interval
+    193 U0298
+    194 U0298							;-------------------------------------------------------------------------------
+    195 U0298							; The following required for back-compatibility with code which does not use
+    196 U0298							; segments.
+    197 U0298
+    198  0000 ????				      SEG
+    199  0000 ????
+    200  0000 ????						; EOF
+------- FILE core-escape.asm
+------- FILE macro.h LEVEL 2 PASS 2
+      0  0000 ????				      include	"macro.h"
+      1  0000 ????						; MACRO.H
+      2  0000 ????						; Version 1.09, 05/SEP/2020
+      3  0000 ????
+      4  0000 ????	       00 6d	   VERSION_MACRO =	109
+      5  0000 ????
+      6  0000 ????						;
+      7  0000 ????						; THIS FILE IS EXPLICITLY SUPPORTED AS A DASM-PREFERRED COMPANION FILE
+      8  0000 ????						; The latest version can be found at https://dasm-assembler.github.io/
+      9  0000 ????						;
+     10  0000 ????						; This file defines DASM macros useful for development for the Atari 2600.
+     11  0000 ????						; It is distributed as a companion machine-specific support package
+     12  0000 ????						; for the DASM compiler.
+     13  0000 ????						;
+     14  0000 ????						; Many thanks to the people who have contributed. If you find an issue with the
+     15  0000 ????						; contents, or would like ot add something, please report as an issue at...
+     16  0000 ????						; https://github.com/dasm-assembler/dasm/issues
+     17  0000 ????
+     18  0000 ????
+     19  0000 ????						; Latest Revisions...
+     20  0000 ????						; 1.09  05/SEP/2020	 - updated license/links
+     21  0000 ????
+     22  0000 ????						; 1.08  13/JUL/2020	 - added use of LXA to CLEAN_START
+     23  0000 ????						; 1.07  19/JAN/2020	 - correction to comment VERTICAL_SYNC
+     24  0000 ????						; 1.06  03/SEP/2004	 - nice revision of VERTICAL_SYNC (Edwin Blink)
+     25  0000 ????						; 1.05  14/NOV/2003	 - Added VERSION_MACRO equate (which will reflect 100x version #)
+     26  0000 ????						;			   This will allow conditional code to verify MACRO.H being
+     27  0000 ????						;			   used for code assembly.
+     28  0000 ????						; 1.04  13/NOV/2003	 - SET_POINTER macro added (16-bit address load)
+     29  0000 ????						;
+     30  0000 ????						; 1.03  23/JUN/2003	 - CLEAN_START macro added - clears TIA, RAM, registers
+     31  0000 ????						;
+     32  0000 ????						; 1.02  14/JUN/2003	 - VERTICAL_SYNC macro added
+     33  0000 ????						;			   (standardised macro for vertical synch code)
+     34  0000 ????						; 1.01  22/MAR/2003	 - SLEEP macro added.
+     35  0000 ????						;			 - NO_ILLEGAL_OPCODES switch implemented
+     36  0000 ????						; 1.0	22/MAR/2003		Initial release
+     37  0000 ????
+     38  0000 ????						; Note: These macros use illegal opcodes.  To disable illegal opcode usage,
+     39  0000 ????						;   define the symbol NO_ILLEGAL_OPCODES (-DNO_ILLEGAL_OPCODES=1 on command-line).
+     40  0000 ????						;   If you do not allow illegal opcode usage, you must include this file
+     41  0000 ????						;   *after* including VCS.H (as the non-illegal opcodes access hardware
+     42  0000 ????						;   registers and require them to be defined first).
+     43  0000 ????
+     44  0000 ????						; Available macros...
+     45  0000 ????						;   SLEEP n		 - sleep for n cycles
+     46  0000 ????						;   VERTICAL_SYNC	 - correct 3 scanline vertical synch code
+     47  0000 ????						;   CLEAN_START	 - set machine to known state on startup
+     48  0000 ????						;   SET_POINTER	 - load a 16-bit absolute to a 16-bit variable
+     49  0000 ????
+     50  0000 ????						;-------------------------------------------------------------------------------
+     51  0000 ????						; SLEEP duration
+     52  0000 ????						; Original author: Thomas Jentzsch
+     53  0000 ????						; Inserts code which takes the specified number of cycles to execute.	This is
+     54  0000 ????						; useful for code where precise timing is required.
+     55  0000 ????						; ILLEGAL-OPCODE VERSION DOES NOT AFFECT FLAGS OR REGISTERS.
+     56  0000 ????						; LEGAL OPCODE VERSION MAY AFFECT FLAGS
+     57  0000 ????						; Uses illegal opcode (DASM 2.20.01 onwards).
+     58  0000 ????
+     59  0000 ????				      MAC	sleep
+     60  0000 ????			   .CYCLES    SET	{1}
+     61  0000 ????
+     62  0000 ????				      IF	.CYCLES < 2
+     63  0000 ????				      ECHO	"MACRO ERROR: 'SLEEP': Duration must be > 1"
+     64  0000 ????				      ERR
+     65  0000 ????				      ENDIF
+     66  0000 ????
+     67  0000 ????				      IF	.CYCLES & 1
+     68  0000 ????				      IFNCONST	NO_ILLEGAL_OPCODES
+     69  0000 ????				      nop	0
+     70  0000 ????				      ELSE
+     71  0000 ????				      bit	VSYNC
+     72  0000 ????				      ENDIF
+     73  0000 ????			   .CYCLES    SET	.CYCLES - 3
+     74  0000 ????				      ENDIF
+     75  0000 ????
+     76  0000 ????				      REPEAT	.CYCLES / 2
+     77  0000 ????				      nop
+     78  0000 ????				      REPEND
+     79  0000 ????				      ENDM		;usage: SLEEP n (n>1)
+     80  0000 ????
+     81  0000 ????						;-------------------------------------------------------------------------------
+     82  0000 ????						; VERTICAL_SYNC
+     83  0000 ????						; revised version by Edwin Blink -- saves bytes!
+     84  0000 ????						; Inserts the code required for a proper 3 scanline vertical sync sequence
+     85  0000 ????						; Note: Alters the accumulator
+     86  0000 ????
+     87  0000 ????						; OUT: A = 0
+     88  0000 ????
+     89  0000 ????				      MAC	vertical_sync
+     90  0000 ????				      lda	#%1110	; each '1' bits generate a VSYNC ON line (bits 1..3)
+     91  0000 ????			   .VSLP1     sta	WSYNC	; 1st '0' bit resets Vsync, 2nd '0' bit exit loop
+     92  0000 ????				      sta	VSYNC
+     93  0000 ????				      lsr
+     94  0000 ????				      bne	.VSLP1	; branch until VYSNC has been reset
+     95  0000 ????				      ENDM
+     96  0000 ????
+     97  0000 ????						;-------------------------------------------------------------------------------
+     98  0000 ????						; CLEAN_START
+     99  0000 ????						; Original author: Andrew Davie
+    100  0000 ????						; Standardised start-up code, clears stack, all TIA registers and RAM to 0
+    101  0000 ????						; Sets stack pointer to $FF, and all registers to 0
+    102  0000 ????						; Sets decimal mode off, sets interrupt flag (kind of un-necessary)
+    103  0000 ????						; Use as very first section of code on boot (ie: at reset)
+    104  0000 ????						; Code written to minimise total ROM usage - uses weird 6502 knowledge :)
+    105  0000 ????
+    106  0000 ????				      MAC	clean_start
+    107  0000 ????				      sei
+    108  0000 ????				      cld
+    109  0000 ????
+    110  0000 ????				      IFNCONST	NO_ILLEGAL_OPCODES
+    111  0000 ????				      lxa	#0
+    112  0000 ????				      ELSE
+    113  0000 ????				      ldx	#0
+    114  0000 ????				      txa
+    115  0000 ????				      ENDIF
+    116  0000 ????				      tay
+    117  0000 ????			   .CLEAR_STACK dex
+    118  0000 ????				      txs
+    119  0000 ????				      pha
+    120  0000 ????				      bne	.CLEAR_STACK	; SP=$FF, X = A = Y = 0
+    121  0000 ????
+    122  0000 ????				      ENDM
+    123  0000 ????
+    124  0000 ????						;-------------------------------------------------------
+    125  0000 ????						; SET_POINTER
+    126  0000 ????						; Original author: Manuel Rotschkar
+    127  0000 ????						;
+    128  0000 ????						; Sets a 2 byte RAM pointer to an absolute address.
+    129  0000 ????						;
+    130  0000 ????						; Usage: SET_POINTER pointer, address
+    131  0000 ????						; Example: SET_POINTER SpritePTR, SpriteData
+    132  0000 ????						;
+    133  0000 ????						; Note: Alters the accumulator, NZ flags
+    134  0000 ????						; IN 1: 2 byte RAM location reserved for pointer
+    135  0000 ????						; IN 2: absolute address
+    136  0000 ????
+    137  0000 ????				      MAC	set_pointer
+    138  0000 ????			   .POINTER   SET	{1}
+    139  0000 ????			   .ADDRESS   SET	{2}
+    140  0000 ????
+    141  0000 ????				      LDA	#<.ADDRESS	; Get Lowbyte of Address
+    142  0000 ????				      STA	.POINTER	; Store in pointer
+    143  0000 ????				      LDA	#>.ADDRESS	; Get Hibyte of Address
+    144  0000 ????				      STA	.POINTER+1	; Store in pointer+1
+    145  0000 ????
+    146  0000 ????				      ENDM
+    147  0000 ????
+    148  0000 ????						;-------------------------------------------------------
+    149  0000 ????						; BOUNDARY byte#
+    150  0000 ????						; Original author: Denis Debro (borrowed from Bob Smith / Thomas)
+    151  0000 ????						;
+    152  0000 ????						; Push data to a certain position inside a page and keep count of how
+    153  0000 ????						; many free bytes the programmer will have.
+    154  0000 ????						;
+    155  0000 ????						; eg: BOUNDARY 5    ; position at byte #5 in page
+    156  0000 ????
+    157  0000 ????			   .FREE_BYTES SET	0
+    158  0000 ????				      MAC	boundary
+    159  0000 ????				      REPEAT	256
+    160  0000 ????				      IF	<. % {1} = 0
+    161  0000 ????				      MEXIT
+    162  0000 ????				      ELSE
+    163  0000 ????			   .FREE_BYTES SET	.FREE_BYTES + 1
+    164  0000 ????				      .byte	$00
+    165  0000 ????				      ENDIF
+    166  0000 ????				      REPEND
+    167  0000 ????				      ENDM
+    168  0000 ????
+    169  0000 ????
+    170  0000 ????						; EOF
+------- FILE core-escape.asm
+     42  0000 ????
+     43  0000 ????						;######################################################################################
+     44  0000 ????						;   __  __			     
+     45  0000 ????						;  |  \/  |			     
+     46  0000 ????						;  | \  / | __ _  ___ _ __ ___  ___ 
+     47  0000 ????						;  | |\/| |/ _` |/ __| '__/ _ \/ __|
+     48  0000 ????						;  | |  | | (_| | (__| | | (_) \__ \
+     49  0000 ????						;  |_|  |_|\__,_|\___|_|  \___/|___/
+     50  0000 ????						;				   
+     51  0000 ????						;######################################################################################
+     52  0000 ????
+     53  0000 ????	       00 c0	   SCREEN_H   equ	#192	; Screen height in scanlines
+     54  0000 ????	       00 0d	   PLAYER_H   equ	#13	; Player height in scanlines
+     55  0000 ????	       00 10	   TILE_H     equ	#16	; Tile height in scanlines
+     56  0000 ????	       00 0b	   TILES_COUNT equ	#11	; Tiles rows per screen
+     57  0000 ????
+     58  0000 ????	       00 00	   PF_COL     equ	#$00	; Playfield color
+     59  0000 ????	       00 02	   BG_COL     equ	#$02	; Background color
+     60  0000 ????	       00 0e	   PLAYER_COL equ	#$0e	; Player color
+     61  0000 ????	       00 02	   DEAD_PLAYER_COL equ	#$02	; Dead player color
+     62  0000 ????	       00 38	   LAVA_COL_0 equ	#$38	; First lava color
+     63  0000 ????	       00 28	   LAVA_COL_1 equ	#$28	; Second lava color
+     64  0000 ????
+     65  0000 ????	       00 02	   LAVA_TIMER equ	#2	; Time to lava rise one scanline
+     66  0000 ????
+     67  0000 ????	       00 08	   X_MIN      equ	#8	; Left bound
+     68  0000 ????	       00 96	   X_MAX      equ	#150	; Right bound
+     69  0000 ????	       00 06	   Y_MIN      equ	#6	; Bottom bound
+     70  0000 ????	       00 b4	   Y_MAX      equ	#180	; Top bound
+     71  0000 ????
+     72  0000 ????	       00 48	   STT_X      equ	#72	; Initial player x coordinate
+     73  0000 ????	       00 4a	   STT_Y      equ	#74	; Initial player y coordinate
+     74  0000 ????	       00 05	   STT_SCORE  equ	#5	; Initial score
+     75  0000 ????
+     76  0000 ????	       00 80	   RIGHT      equ	#%10000000	; Right code
+     77  0000 ????	       00 40	   LEFT       equ	#%01000000	; Left code
+     78  0000 ????	       00 20	   DOWN       equ	#%00100000	; Down code
+     79  0000 ????	       00 10	   UP	      equ	#%00010000	; Up code
+     80  0000 ????
+     81  0000 ????	       00 06	   AUD_VOL    equ	#6	; Audio volume
+     82  0000 ????	       00 08	   COL_SOUND  equ	#8	; Collision sound
+     83  0000 ????
+     84  0000 ????						;######################################################################################
+     85  0000 ????						;  __	    __	      _       _     _		
+     86  0000 ????						;  \ \    / /	     (_)     | |   | |		
+     87  0000 ????						;   \ \  / /_ _ _ __ _  __ _| |__ | | ___  ___ 
+     88  0000 ????						;    \ \/ / _` | '__| |/ _` | '_ \| |/ _ \/ __|
+     89  0000 ????						;     \  / (_| | |  | | (_| | |_) | |	__/\__ \
+     90  0000 ????						;	\/ \__,_|_|  |_|\__,_|_.__/|_|\___||___/
+     91  0000 ????						;					   
+     92  0000 ????						;######################################################################################					   
+     93  0000 ????
+     94 U00a5 ????				      seg.u	vars
+     95 U0080					      org	$80
+     96 U0080
+     97 U0080		       00	   playerX    ds	1	; Player x coordinate
+     98 U0081		       00	   playerY    ds	1	; Player y coordinate
+     99 U0082		       00	   prevPlayerX ds	1	; Previous player x coordinate
+    100 U0083		       00	   prevPlayerY ds	1	; Previous player y coordinate
+    101 U0084		       00	   playerMove ds	1	; Player movement direction 
+    102 U0085							; R|L|D|U|0|0|0|0
+    103 U0085		       00	   isPlayerDead ds	1	; Indicates whether the player is dead
+    104 U0086		       00	   prevCollided ds	1	; Indicates whether player collided
+    105 U0087
+    106 U0087		       00	   tileTimer  ds	1	; Timer for tile changing
+    107 U0088		       00	   screenOffset ds	1	; Screen offset
+    108 U0089		       00	   screen     ds	1	; Current screen
+    109 U008a
+    110 U008a		       00	   score      ds	1	; Score
+    111 U008b		       00	   prevScore  ds	1	; Previous score
+    112 U008c		       00	   digitIdx0  ds	1	; First score digit index
+    113 U008d		       00	   digitIdx1  ds	1	; Second score digit index
+    114 U008e		       00	   digitIdx2  ds	1	; Third score digit index
+    115 U008f		       00	   digitIdx3  ds	1	; Fourth score digit index
+    116 U0090		       00 00 00 00*digitPF0   ds	5	; Third score digit buffer
+    117 U0095		       00 00 00 00*digitPF1   ds	5	; First and second score digits buffer
+    118 U009a		       00 00 00 00*digitPF2   ds	5	; Last score digit buffer
+    119 U009f		       00	   digitTemp  ds	1	; Temporary variable to store digits
+    120 U00a0
+    121 U00a0		       00	   lavaHeight ds	1	; Lava height
+    122 U00a1		       00	   lavaTimer  ds	1	; Timer for rise lava
+    123 U00a2		       00	   lavaColor  ds	1	; Current lava color
+    124 U00a3		       00	   lavaScreen ds	1	; Current lava screen
+    125 U00a4
+    126 U00a4		       00	   temp       ds	1	; Temporary variable to store digits
+    127 U00a5
+    128  10000 ????				       seg	main
+    129  f000					      org	$f000
+    130  f000
+    131  f000							;######################################################################################
+    132  f000							;   _____		  _   
+    133  f000							;  |  __ \		 | |  
+    134  f000							;  | |__) |___  ___  ___| |_ 
+    135  f000							;  |  _  // _ \/ __|/ _ \ __|
+    136  f000							;  | | \ \  __/\__ \  __/ |_ 
+    137  f000							;  |_|  \_\___||___/\___|\__|
+    138  f000							;		      
+    139  f000							;######################################################################################
+    140  f000
+      0  f000				   reset      CLEAN_START
+      1  f000		       78		      sei
+      2  f001		       d8		      cld
+      3  f002
+      4  f002					      IFNCONST	NO_ILLEGAL_OPCODES
+      5  f002		       ab 00		      lxa	#0
+      6  f004				  -	      ELSE
+      7  f004				  -	      ldx	#0
+      8  f004				  -	      txa
+      9  f004					      ENDIF
+     10  f004		       a8		      tay
+     11  f005		       ca	   .CLEAR_STACK dex
+     12  f006		       9a		      txs
+     13  f007		       48		      pha
+     14  f008		       d0 fb		      bne	.CLEAR_STACK
+     15  f00a
+    142  f00a
+    143  f00a							;.............................. PLAYER COLOR ..........................................
+    144  f00a		       a9 0e		      lda	#PLAYER_COL	; (2)
+    145  f00c		       85 06		      sta	COLUP0	; (3)
+    146  f00e
+    147  f00e							;.............................. INITIAL PLAYER POSITION ...............................
+    148  f00e		       a9 48		      lda	#STT_X	; (2)
+    149  f010		       85 80		      sta	playerX	; (3)
+    150  f012		       85 82		      sta	prevPlayerX	; (3)
+    151  f014		       a9 4a		      lda	#STT_Y	; (2)
+    152  f016		       85 81		      sta	playerY	; (3)
+    153  f018		       85 83		      sta	prevPlayerY	; (3)
+    154  f01a
+    155  f01a							;.............................. INITIAL SCORE .........................................
+    156  f01a		       a9 04		      lda	#STT_SCORE-1	; (2)
+    157  f01c		       85 8c		      sta	digitIdx0	; (3)
+    158  f01e
+    159  f01e							;.............................. TIMERS ................................................
+    160  f01e		       a9 02		      lda	#LAVA_TIMER	; (2)
+    161  f020		       85 a1		      sta	lavaTimer	; (3)
+    162  f022
+    163  f022							;.............................. LAVA AUDIO ............................................
+    164  f022		       a9 02		      lda	#2	; (2)
+    165  f024		       85 16		      sta	AUDC1	; (3)
+    166  f026		       a9 14		      lda	#20	; (2)
+    167  f028		       85 18		      sta	AUDF1	; (3)
+    168  f02a		       a9 00		      lda	#0	; (2)
+    169  f02c		       85 1a		      sta	AUDV1	; (3)
+    170  f02e
+    171  f02e							;######################################################################################
+    172  f02e							;   _	  _	      _       _       
+    173  f02e							;  | |  | |	     | |     | |      
+    174  f02e							;  | |  | |_ __   __| | __ _| |_ ___ 
+    175  f02e							;  | |  | | '_ \ / _` |/ _` | __/ _ \
+    176  f02e							;  | |__| | |_) | (_| | (_| | ||  __/
+    177  f02e							;   \____/| .__/ \__,_|\__,_|\__\___|
+    178  f02e							;	   | |			      
+    179  f02e							;	   |_|			      
+    180  f02e							;######################################################################################
+    181  f02e
+    182  f02e							;--------------------------------------------------------------------------------------
+    183  f02e							;  __	 __	  _   _ 	_   ___ 		________  
+    184  f02e							;  \ \ / /__ _ _| |_(_)__ __ _| | / __|_  _ _ _  __   / /__ /\ \ 
+    185  f02e							;   \ V / -_) '_|  _| / _/ _` | | \__ \ || | ' \/ _| | | |_ \ | |
+    186  f02e							;    \_/\___|_|  \__|_\__\__,_|_| |___/\_, |_||_\__| | ||___/ | |
+    187  f02e							;					|__/	       \_\    /_/ 
+    188  f02e							;--------------------------------------------------------------------------------------
+    189  f02e
+    190  f02e		       a9 00	   startFrame lda	#0	; (2)	     
+    191  f030		       85 01		      sta	VBLANK	; (3)
+    192  f032		       a9 02		      lda	#2	; (2)
+    193  f034		       85 00		      sta	VSYNC	; (3)
+    194  f036		       85 02		      sta	WSYNC	; (3)
+    195  f038		       85 02		      sta	WSYNC	; (3)
+    196  f03a		       85 02		      sta	WSYNC	; (3)
+    197  f03c		       a9 00		      lda	#0	; (2)
+    198  f03e		       85 00		      sta	VSYNC	; (3)
+    199  f040
+    200  f040							;--------------------------------------------------------------------------------------
+    201  f040							;  __	 __	  _   _ 	_   ___ _	    _	   ____________  
+    202  f040							;  \ \ / /__ _ _| |_(_)__ __ _| | | _ ) |__ _ _ _ | |__  / /__ /__  \ \ 
+    203  f040							;   \ V / -_) '_|  _| / _/ _` | | | _ \ / _` | ' \| / / | | |_ \ / / | |
+    204  f040							;    \_/\___|_|  \__|_\__\__,_|_| |___/_\__,_|_||_|_\_\ | ||___//_/  | |
+    205  f040							;							  \_\	     /_/ 
+    206  f040							;--------------------------------------------------------------------------------------
+    207  f040
+    208  f040							;.............................. EMPTY SCANLINES .......................................
+    209  f040		       a2 00		      ldx	#0	; (2)
+    210  f042		       85 02	   verticalBlank sta	WSYNC	; (3)				
+    211  f044		       e8		      inx		; (2)
+    212  f045		       e0 07		      cpx	#7	; (2)
+    213  f047		       d0 f9		      bne	verticalBlank	; (2/3)
+    214  f049
+    215  f049							;.............................. RESET .................................................
+    216  f049		       a9 01		      lda	#%00000001	; (2)
+    217  f04b		       2c 82 02 	      bit	SWCHB	; (3)
+    218  f04e		       f0 b0		      beq	reset	; (2/3)
+    219  f050		       85 02		      sta	WSYNC	; (3)
+    220  f052
+    221  f052							;.............................. LAVA ..................................................
+    222  f052		       a5 a0		      lda	lavaHeight	; (3)
+    223  f054		       c9 b4		      cmp	#Y_MAX	; (2)
+    224  f056		       d0 06		      bne	dontLavaScreen	; (2/3)
+    225  f058		       a9 00		      lda	#0	; (3)
+    226  f05a		       85 a0		      sta	lavaHeight	; (3)
+    227  f05c		       e6 a3		      inc	lavaScreen	; (5)
+    228  f05e				   dontLavaScreen
+    229  f05e		       c6 a1		      dec	lavaTimer	; (5)
+    230  f060		       d0 0c		      bne	dontIncLava	; (2/3)
+    231  f062		       e6 a0		      inc	lavaHeight	; (5)
+    232  f064		       a9 02		      lda	#LAVA_TIMER	; (2)
+    233  f066		       85 a1		      sta	lavaTimer	; (3)
+    234  f068		       a5 a2		      lda	lavaColor	; (3)
+    235  f06a		       49 01		      eor	#1	; (2)
+    236  f06c		       85 a2		      sta	lavaColor	; (3)
+    237  f06e				   dontIncLava
+    238  f06e		       a5 89		      lda	screen	; (3)
+    239  f070		       38		      sec		; (2)
+    240  f071		       e5 a3		      sbc	lavaScreen	; (3)
+    241  f073		       85 a4		      sta	temp	; (3)
+    242  f075		       a9 03		      lda	#3	; (2)
+    243  f077		       18		      clc		; (2)
+    244  f078		       e5 a4		      sbc	temp	; (3)
+    245  f07a		       a9 00		      lda	#0	; (2)
+    246  f07c		       90 08		      bcc	skipLavaSound	; (3)
+    247  f07e		       a6 a4		      ldx	temp	; (3)
+    248  f080		       a9 0b		      lda	#11	; (2)
+    249  f082		       38		      sec		; (2)
+    250  f083		       fd 05 f4 	      sbc	multFive,x	; (4)
+    251  f086		       85 1a	   skipLavaSound sta	AUDV1	; (3)
+    252  f088
+    253  f088		       85 02		      sta	WSYNC	; (3)
+    254  f08a
+    255  f08a							;.............................. CALCULATE SCORE .......................................
+    256  f08a		       a5 81		      lda	playerY	; (3)
+    257  f08c		       4a		      lsr		; (2)
+    258  f08d		       4a		      lsr		; (2)
+    259  f08e		       4a		      lsr		; (2)
+    260  f08f		       4a		      lsr		; (2)
+    261  f090		       85 8a		      sta	score	; (3)
+    262  f092
+    263  f092		       c5 8b		      cmp	prevScore	; (3)
+    264  f094		       f0 0c		      beq	scoreNotChanged	; (2/3)
+    265  f096		       18	   scoreChanged clc		; (2)
+    266  f097		       e5 8b		      sbc	prevScore	; (3)
+    267  f099		       90 05		      bcc	scoreSmaller	; (2/3) 
+    268  f09b		       e6 8c		      inc	digitIdx0	; (5)
+    269  f09d		       4c a2 f0 	      jmp	scoreNotChanged	; (3)
+    270  f0a0		       c6 8c	   scoreSmaller dec	digitIdx0	; (5)
+    271  f0a2		       a5 8a	   scoreNotChanged lda	score	; (3)
+    272  f0a4		       85 8b		      sta	prevScore	; (3)
+    273  f0a6
+    274  f0a6		       85 02		      sta	WSYNC	; (3)
+    275  f0a8
+    276  f0a8		       a5 8c		      lda	digitIdx0	; (3)
+    277  f0aa		       c9 0a		      cmp	#10	; (2)
+    278  f0ac		       d0 1e		      bne	notIncrement	; (2/3)
+    279  f0ae		       a9 00		      lda	#0	; (2)
+    280  f0b0		       85 8c		      sta	digitIdx0	; (3)
+    281  f0b2		       e6 8d		      inc	digitIdx1	; (5)
+    282  f0b4
+    283  f0b4		       a5 8d		      lda	digitIdx1	; (3)
+    284  f0b6		       c9 0a		      cmp	#10	; (2)
+    285  f0b8		       d0 12		      bne	notIncrement	; (2/3)
+    286  f0ba		       a9 00		      lda	#0	; (2)
+    287  f0bc		       85 8d		      sta	digitIdx1	; (3)
+    288  f0be		       e6 8e		      inc	digitIdx2	; (5)
+    289  f0c0
+    290  f0c0		       a5 8e		      lda	digitIdx2	; (3)
+    291  f0c2		       c9 0a		      cmp	#10	; (2)
+    292  f0c4		       d0 06		      bne	notIncrement	; (2/3)
+    293  f0c6		       a9 00		      lda	#0	; (2)
+    294  f0c8		       85 8e		      sta	digitIdx2	; (3)
+    295  f0ca		       e6 8f		      inc	digitIdx3	; (5)		
+    296  f0cc
+    297  f0cc		       85 02	   notIncrement sta	WSYNC	; (3)
+    298  f0ce
+    299  f0ce		       a5 8c		      lda	digitIdx0	; (3)
+    300  f0d0		       c9 ff		      cmp	#-1	; (3)
+    301  f0d2		       d0 1e		      bne	notDecrement	; (2/3)
+    302  f0d4		       a9 09		      lda	#9	; (2)
+    303  f0d6		       85 8c		      sta	digitIdx0	; (3)
+    304  f0d8		       c6 8d		      dec	digitIdx1	; (5)
+    305  f0da
+    306  f0da		       a5 8d		      lda	digitIdx1	; (3)
+    307  f0dc		       c9 ff		      cmp	#-1	; (3)
+    308  f0de		       d0 12		      bne	notDecrement	; (2/3)
+    309  f0e0		       a9 09		      lda	#9	; (2)
+    310  f0e2		       85 8d		      sta	digitIdx1	; (3)
+    311  f0e4		       c6 8e		      dec	digitIdx2	; (5)
+    312  f0e6
+    313  f0e6		       a5 8e		      lda	digitIdx2	; (3)
+    314  f0e8		       c9 ff		      cmp	#-1	; (3)
+    315  f0ea		       d0 06		      bne	notDecrement	; (2/3)
+    316  f0ec		       a9 09		      lda	#9	; (2)
+    317  f0ee		       85 8e		      sta	digitIdx2	; (3)
+    318  f0f0		       c6 8f		      dec	digitIdx3	; (5)		
+    319  f0f2
+    320  f0f2		       85 02	   notDecrement sta	WSYNC	; (3)
+    321  f0f4
+    322  f0f4							;.............................. SCORE BUFFERS .........................................
+    323  f0f4		       a2 00		      ldx	#0	; (2)
+    324  f0f6		       a4 8c	   scoreDigits ldy	digitIdx0	; (3)		
+    325  f0f8		       8a		      txa		; (2)
+    326  f0f9		       18		      clc		; (2)
+    327  f0fa		       79 05 f4 	      adc	multFive,y	; (4)
+    328  f0fd		       a8		      tay		; (2)
+    329  f0fe		       b9 1c f4 	      lda	DIGITS,y	; (3)
+    330  f101		       29 0f		      and	#%00001111	; (2)
+    331  f103		       85 9f		      sta	digitTemp	; (3)
+    332  f105
+    333  f105		       a4 8d		      ldy	digitIdx1	; (3)		
+    334  f107		       8a		      txa		; (2)
+    335  f108		       18		      clc		; (2)
+    336  f109		       79 05 f4 	      adc	multFive,y	; (4)
+    337  f10c		       a8		      tay		; (2)
+    338  f10d		       b9 1c f4 	      lda	DIGITS,y	; (3)
+    339  f110		       29 f0		      and	#%11110000	; (2)
+    340  f112		       18		      clc		; (2)
+    341  f113		       65 9f		      adc	digitTemp	; (3)
+    342  f115		       95 95		      sta	digitPF1,x	; (4)
+    343  f117
+    344  f117		       85 02		      sta	WSYNC	; (3)	
+    345  f119
+    346  f119		       a4 8e		      ldy	digitIdx2	; (3)		
+    347  f11b		       8a		      txa		; (2)
+    348  f11c		       18		      clc		; (2)
+    349  f11d		       79 05 f4 	      adc	multFive,y	; (4)
+    350  f120		       a8		      tay		; (2)
+    351  f121		       b9 4e f4 	      lda	DIGITS_REV,y	; (3)
+    352  f124		       95 90		      sta	digitPF0,x	; (4)
+    353  f126
+    354  f126		       a4 8f		      ldy	digitIdx3	; (3)		
+    355  f128		       8a		      txa		; (2)
+    356  f129		       18		      clc		; (2)
+    357  f12a		       79 05 f4 	      adc	multFive,y	; (4)
+    358  f12d		       a8		      tay		; (2)
+    359  f12e		       b9 4e f4 	      lda	DIGITS_REV,y	; (3)
+    360  f131		       29 f0		      and	#%11110000	; (2)
+    361  f133		       95 9a		      sta	digitPF2,x	; (4)
+    362  f135
+    363  f135		       e8		      inx		; (2)
+    364  f136		       85 02		      sta	WSYNC	; (3)
+    365  f138		       e0 05		      cpx	#5	; (2)
+    366  f13a		       d0 ba		      bne	scoreDigits	; (2/3)
+    367  f13c
+    368  f13c		       85 02		      sta	WSYNC	; (3)
+    369  f13e
+    370  f13e							;.............................. DRAWSCORE .............................................
+    371  f13e		       a9 00		      lda	#%00000000	; (2)
+    372  f140		       85 0d		      sta	PF0	; (3)
+    373  f142		       85 0e		      sta	PF1	; (3)
+    374  f144		       85 0f		      sta	PF2	; (3)
+    375  f146
+    376  f146		       a9 0e		      lda	#PLAYER_COL	; (2)
+    377  f148		       85 08		      sta	COLUPF	; (3)
+    378  f14a		       a9 00		      lda	#PF_COL	; (2)
+    379  f14c		       85 09		      sta	COLUBK	; (3)
+    380  f14e
+    381  f14e		       85 02		      sta	WSYNC	; (3)
+    382  f150
+      0  f150					      SLEEP	4
+      1  f150				   .CYCLES    SET	4
+      2  f150
+      3  f150				  -	      IF	.CYCLES < 2
+      4  f150				  -	      ECHO	"MACRO ERROR: 'SLEEP': Duration must be > 1"
+      5  f150				  -	      ERR
+      6  f150					      ENDIF
+      7  f150
+      8  f150				  -	      IF	.CYCLES & 1
+      9  f150				  -	      IFNCONST	NO_ILLEGAL_OPCODES
+     10  f150				  -	      nop	0
+     11  f150				  -	      ELSE
+     12  f150				  -	      bit	VSYNC
+     13  f150				  -	      ENDIF
+     14  f150				  -.CYCLES    SET	.CYCLES - 3
+     15  f150					      ENDIF
+     16  f150
+     17  f150					      REPEAT	.CYCLES / 2
+     18  f150		       ea		      nop
+     17  f150					      REPEND
+     18  f151		       ea		      nop
+     19  f152					      REPEND
+    384  f152		       a2 00		      ldx	#0	; (2)
+    385  f154		       a9 00	   drawScore  lda	#%00000000	; (2)
+    386  f156		       85 0d		      sta	PF0	; (3)
+    387  f158		       85 0e		      sta	PF1	; (3)
+    388  f15a		       85 0f		      sta	PF2	; (3)
+    389  f15c
+    390  f15c		       8a		      txa		; (2)
+    391  f15d		       4a		      lsr		; (2)
+    392  f15e		       a8		      tay		; (2)
+    393  f15f		       b9 9a 00 	      lda	digitPF2,y	; (4)
+    394  f162		       85 0f		      sta	PF2	; (3)
+    395  f164		       b9 90 00 	      lda	digitPF0,y	; (4)
+    396  f167		       85 0d		      sta	PF0	; (3)
+    397  f169		       b9 95 00 	      lda	digitPF1,y	; (4)
+    398  f16c		       85 0e		      sta	PF1	; (3)
+    399  f16e
+    400  f16e		       b9 80 f4 	      lda	LETTERS,y	; (2)
+    401  f171		       85 0f		      sta	PF2	; (2)
+    402  f173
+    403  f173		       85 02		      sta	WSYNC	; (3)		
+    404  f175		       e8		      inx		; (2)
+    405  f176		       e0 0a		      cpx	#10	; (2)
+    406  f178		       d0 da		      bne	drawScore	; (2/3)
+    407  f17a
+    408  f17a		       a9 00		      lda	#PF_COL	; (2)
+    409  f17c		       85 08		      sta	COLUPF	; (3)
+    410  f17e		       a9 02		      lda	#BG_COL	; (2)				
+    411  f180		       a6 89		      ldx	screen	; (3)
+    412  f182		       e4 a3		      cpx	lavaScreen	; (3)
+    413  f184		       d0 03		      bne	darkBG	; (2/3)
+    414  f186		       18		      clc		; (2)
+    415  f187		       69 02		      adc	#2	; (2)
+    416  f189		       85 09	   darkBG     sta	COLUBK	; (3)
+    417  f18b		       a9 ff		      lda	#%11111111	; (2)
+    418  f18d		       85 0d		      sta	PF0	; (3)
+    419  f18f		       85 0e		      sta	PF1	; (3)
+    420  f191		       85 0f		      sta	PF2	; (3)
+    421  f193
+    422  f193							;.............................. HORIZONTAL PLAYER POSITION ............................
+    423  f193		       a5 80		      lda	playerX	; (3)
+    424  f195		       a2 00		      ldx	#0	; (2)
+    425  f197		       85 02		      sta	WSYNC	; (3)
+    426  f199		       24 00		      bit	0	; (3)
+    427  f19b		       38		      sec		; (2)
+    428  f19c		       e9 0f	   hPlayer    sbc	#15	; (2)
+    429  f19e		       b0 fc		      bcs	hPlayer	; (2/3)
+    430  f1a0		       49 07		      eor	#7	; (2)
+    431  f1a2		       0a		      asl		; (2)
+    432  f1a3		       0a		      asl		; (2)
+    433  f1a4		       0a		      asl		; (2)
+    434  f1a5		       0a		      asl		; (2)
+    435  f1a6		       95 10		      sta	RESP0,x	; (3)
+    436  f1a8		       95 20		      sta	HMP0,x	; (3)
+    437  f1aa
+    438  f1aa		       85 02		      sta	WSYNC	; (3)
+    439  f1ac		       85 2a		      sta	HMOVE	; (3)
+    440  f1ae
+    441  f1ae		       85 02		      sta	WSYNC	; (3)
+    442  f1b0
+    443  f1b0							;--------------------------------------------------------------------------------------
+    444  f1b0							;   ___		   __ _     _	 _    ___ ___ _____  
+    445  f1b0							;  |	\ _ _ __ ___ __ __/ _(_)___| |__| |  / / / _ \_  ) \ 
+    446  f1b0							;  | |) | '_/ _` \ V  V /  _| / -_) / _` | | || \_, // / | |
+    447  f1b0							;  |___/|_| \__,_|\_/\_/|_| |_\___|_\__,_| | ||_|/_//___|| |
+    448  f1b0							;					     \_\	 /_/ 
+    449  f1b0							;--------------------------------------------------------------------------------------
+    450  f1b0
+    451  f1b0							;.............................. LAVA BACKGROUND .......................................
+    452  f1b0		       a5 a3		      lda	lavaScreen	; (3)
+    453  f1b2		       18		      clc		; (2)
+    454  f1b3		       e5 89		      sbc	screen	; (3)
+    455  f1b5		       90 0a		      bcc	notScreenInLava	; (2/3)
+    456  f1b7		       a0 38		      ldy	#LAVA_COL_0	; (2)
+    457  f1b9		       a5 a2		      lda	lavaColor	; (3)
+    458  f1bb		       d0 02		      bne	otherLavaCol	; (2/3)
+    459  f1bd		       a0 28		      ldy	#LAVA_COL_1	; (2)
+    460  f1bf		       84 09	   otherLavaCol sty	COLUBK	; (3)
+    461  f1c1				   notScreenInLava
+    462  f1c1
+    463  f1c1							;.............................. START DRAWFILED .......................................
+    464  f1c1		       a9 00		      lda	#0	; (2)
+    465  f1c3		       85 87		      sta	tileTimer	; (3)
+    466  f1c5		       a2 c0		      ldx	#SCREEN_H	; (2)
+    467  f1c7
+    468  f1c7		       a5 87	   drawField  lda	tileTimer	; (3)
+    469  f1c9		       d0 22		      bne	drawPlayer	; (2/3)
+    470  f1cb
+    471  f1cb							;.............................. PLAYFIELD .............................................
+    472  f1cb		       bd 44 f3 	      lda	divideTileHeight,x	; (4)
+    473  f1ce		       18		      clc		; (2)
+    474  f1cf		       65 88		      adc	screenOffset	; (3)
+    475  f1d1		       a8		      tay		; (2)
+    476  f1d2		       b9 85 f4 	      lda	PF0_DATA,y	; (4)
+    477  f1d5		       85 02		      sta	WSYNC	; (3)
+    478  f1d7		       85 0d		      sta	PF0	; (3)
+    479  f1d9		       b9 cd f4 	      lda	PF1_DATA,y	; (4)
+    480  f1dc		       85 0e		      sta	PF1	; (3)
+    481  f1de		       b9 15 f5 	      lda	PF2_DATA,y	; (4)
+    482  f1e1		       85 0f		      sta	PF2	; (3)
+    483  f1e3
+    484  f1e3		       a9 10		      lda	#TILE_H	; (2)
+    485  f1e5		       85 87		      sta	tileTimer	; (3)
+    486  f1e7
+    487  f1e7		       ca		      dex		; (2)
+    488  f1e8		       d0 dd		      bne	drawField	; (2/3)
+    489  f1ea		       4c 18 f2 	      jmp	endDrawfield	; (3)
+    490  f1ed
+    491  f1ed							;.............................. DRAW PLAYER ...........................................
+    492  f1ed		       8a	   drawPlayer txa		; (2)
+    493  f1ee		       38		      sec		; (2)
+    494  f1ef		       e5 81		      sbc	playerY	; (3)
+    495  f1f1		       c9 0d		      cmp	#PLAYER_H	; (2)
+    496  f1f3		       90 02		      bcc	playerSprite	; (2/3)
+    497  f1f5		       a9 00		      lda	#0	; (2)
+    498  f1f7		       a8	   playerSprite tay		; (2)
+    499  f1f8		       b9 0f f4 	      lda	PLAYER_SPR,y	; (4)
+    500  f1fb		       85 02		      sta	WSYNC	; (3)
+    501  f1fd		       85 1b		      sta	GRP0	; (3)
+    502  f1ff
+    503  f1ff							;.............................. LAVA ..................................................
+    504  f1ff		       a4 89		      ldy	screen	; (3)
+    505  f201		       c4 a3		      cpy	lavaScreen	; (3)
+    506  f203		       d0 0e		      bne	dontDrawnLava	; (2/3)
+    507  f205
+    508  f205		       e4 a0		      cpx	lavaHeight	; (3)
+    509  f207		       d0 0a		      bne	dontDrawnLava	; (2/3)
+    510  f209		       a0 38		      ldy	#LAVA_COL_0	; (2)
+    511  f20b		       a5 a2		      lda	lavaColor	; (3)
+    512  f20d		       d0 02		      bne	otherLavaColor	; (2/3)
+    513  f20f		       a0 28		      ldy	#LAVA_COL_1	; (2)
+    514  f211		       84 09	   otherLavaColor sty	COLUBK	; (3)
+    515  f213				   dontDrawnLava
+    516  f213
+    517  f213		       c6 87		      dec	tileTimer	; (5)
+    518  f215		       ca		      dex		; (2)
+    519  f216		       d0 af		      bne	drawField	; (2/3)
+    520  f218
+    521  f218							;.............................. END DRAWFIELD .........................................
+    522  f218		       a9 42	   endDrawfield lda	#%01000010	; (2)
+    523  f21a		       85 01		      sta	VBLANK	; (3)
+    524  f21c
+    525  f21c							;.............................. CLEAR PLAYFIELD .......................................
+    526  f21c		       85 02		      sta	WSYNC	; (3)
+    527  f21e		       a9 ff		      lda	#%11111111	; (2)
+    528  f220		       85 0d		      sta	PF0	; (3)
+    529  f222		       85 0e		      sta	PF1	; (3)
+    530  f224		       85 0f		      sta	PF2	; (3)
+    531  f226
+    532  f226							;--------------------------------------------------------------------------------------
+    533  f226							;    ___				   ______ ____	
+    534  f226							;   / _ \__ _____ _ _ ___ __ __ _ _ _	  / /__ //  \ \ 
+    535  f226							;  | (_) \ V / -_) '_(_-</ _/ _` | ' \  | | |_ \ () | |
+    536  f226							;   \___/ \_/\___|_| /__/\__\__,_|_||_| | ||___/\__/| |
+    537  f226							;					  \_\	    /_/ 
+    538  f226							;--------------------------------------------------------------------------------------
+    539  f226
+    540  f226							;.............................. EMPTY SCANLINES .......................................
+    541  f226		       a2 00		      ldx	#0	; (2)
+    542  f228		       85 02	   overscan   sta	WSYNC	; (3)
+    543  f22a		       e8		      inx		; (2)
+    544  f22b		       e0 17		      cpx	#23	; (2)
+    545  f22d		       d0 f9		      bne	overscan	; (2/3)
+    546  f22f		       85 02		      sta	WSYNC	; (3)
+    547  f231
+    548  f231							;.............................. AUDIO .................................................
+    549  f231		       a5 a1		      lda	lavaTimer	; (3)
+    550  f233		       0a		      asl		; (2)
+    551  f234		       0a		      asl		; (2)
+    552  f235		       0a		      asl		; (2)
+    553  f236		       85 17		      sta	AUDF0	; (3)
+    554  f238		       a9 06		      lda	#AUD_VOL	; (2)
+    555  f23a		       85 19		      sta	AUDV0	; (3)
+    556  f23c		       a9 00		      lda	#0	; (2)
+    557  f23e		       85 15		      sta	AUDC0	; (3)
+    558  f240		       85 02		      sta	WSYNC	; (3)
+    559  f242
+    560  f242							;.............................. CHANGE SCREEN .........................................
+    561  f242		       a9 b4		      lda	#Y_MAX	; (2)
+    562  f244		       18		      clc		; (2)
+    563  f245		       e5 81		      sbc	playerY	; (3)
+    564  f247		       90 35		      bcc	nextScreen	; (2/3)
+    565  f249
+    566  f249		       a5 81		      lda	playerY	; (2)
+    567  f24b		       18		      clc		; (2)
+    568  f24c		       e9 06		      sbc	#Y_MIN	; (3)
+    569  f24e		       90 40		      bcc	prevScreen	; (2/3)
+    570  f250
+    571  f250							;.............................. COLLISION .............................................
+    572  f250		       a5 02		      lda	CXP0FB	; (2)
+    573  f252		       30 0f		      bmi	collision	; (2/3)
+    574  f254		       a5 80		      lda	playerX	; (3)
+    575  f256		       85 82		      sta	prevPlayerX	; (3)
+    576  f258		       a5 81		      lda	playerY	; (3)
+    577  f25a		       85 83		      sta	prevPlayerY	; (3)
+    578  f25c		       a9 00		      lda	#0	; (2)
+    579  f25e		       85 86		      sta	prevCollided	; (3)
+    580  f260		       4c 9f f2 	      jmp	noCollision	; (3)
+    581  f263
+    582  f263		       a5 82	   collision  lda	prevPlayerX	; (3)
+    583  f265		       85 80		      sta	playerX	; (3)
+    584  f267		       a5 83		      lda	prevPlayerY	; (3)
+    585  f269		       85 81		      sta	playerY	; (3)
+    586  f26b		       a9 00		      lda	#0	; (2)
+    587  f26d		       85 84		      sta	playerMove	; (3)
+    588  f26f		       a5 86		      lda	prevCollided	; (3)
+    589  f271		       d0 2c		      bne	noCollision	; (2/3)
+    590  f273		       a9 01		      lda	#1	; (2)
+    591  f275		       85 86		      sta	prevCollided	; (3)
+    592  f277		       a9 08		      lda	#COL_SOUND	; (2)
+    593  f279		       85 15		      sta	AUDC0	; (3)
+    594  f27b		       4c 9f f2 	      jmp	noCollision	; (3)
+    595  f27e
+    596  f27e		       a9 0b	   nextScreen lda	#TILES_COUNT	; (2)
+    597  f280		       18		      clc		; (2)
+    598  f281		       65 88		      adc	screenOffset	; (3)
+    599  f283		       85 88		      sta	screenOffset	; (3)
+    600  f285		       e6 89		      inc	screen	; (5)
+    601  f287		       a9 06		      lda	#Y_MIN	; (2)
+    602  f289		       85 81		      sta	playerY	; (3)
+    603  f28b		       85 83		      sta	prevPlayerY	; (3)
+    604  f28d		       4c 9f f2 	      jmp	noCollision	; (3)
+    605  f290
+    606  f290		       a5 88	   prevScreen lda	screenOffset	; (3)
+    607  f292		       38		      sec		; (2)
+    608  f293		       e9 0b		      sbc	#TILES_COUNT	; (2)
+    609  f295		       85 88		      sta	screenOffset	; (3)
+    610  f297		       c6 89		      dec	screen	; (5)
+    611  f299		       a9 b4		      lda	#Y_MAX	; (2)
+    612  f29b		       85 81		      sta	playerY	; (3)
+    613  f29d		       85 83		      sta	prevPlayerY	; (3)
+    614  f29f
+    615  f29f		       85 2c	   noCollision sta	CXCLR	; (3)
+    616  f2a1
+    617  f2a1		       85 02		      sta	WSYNC	; (3)
+    618  f2a3
+    619  f2a3							;.............................. INPUT .................................................
+    620  f2a3		       a5 84		      lda	playerMove	; (3)
+    621  f2a5		       d0 1e		      bne	skipInput	; (2/3)
+    622  f2a7
+    623  f2a7		       a9 80		      lda	#RIGHT	; (2)
+    624  f2a9		       2c 80 02 	      bit	SWCHA	; (3)
+    625  f2ac		       f0 17		      beq	skipInput	; (2/3)
+    626  f2ae
+    627  f2ae		       a9 40		      lda	#LEFT	; (2)
+    628  f2b0		       2c 80 02 	      bit	SWCHA	; (3)
+    629  f2b3		       f0 10		      beq	skipInput	; (2/3)
+    630  f2b5
+    631  f2b5		       a9 20		      lda	#DOWN	; (2)
+    632  f2b7		       2c 80 02 	      bit	SWCHA	; (3)
+    633  f2ba		       f0 09		      beq	skipInput	; (2/3)
+    634  f2bc
+    635  f2bc		       a9 10		      lda	#UP	; (2)
+    636  f2be		       2c 80 02 	      bit	SWCHA	; (3)
+    637  f2c1		       f0 02		      beq	skipInput	; (2/3)
+    638  f2c3
+    639  f2c3		       a9 00		      lda	#0	; (2)
+    640  f2c5		       85 84	   skipInput  sta	playerMove	; (3)
+    641  f2c7		       f0 08		      beq	notMoveSound	; (2)
+    642  f2c9		       a9 01		      lda	#1	; (2)
+    643  f2cb		       85 19		      sta	AUDV0	; (3)
+    644  f2cd		       a9 0c		      lda	#12	; (2)
+    645  f2cf		       85 15		      sta	AUDC0	; (3)
+    646  f2d1				   notMoveSound
+    647  f2d1		       85 02		      sta	WSYNC	; (3)
+    648  f2d3
+    649  f2d3							;.............................. MOVEMENT ..............................................
+    650  f2d3		       a6 80		      ldx	playerX	; (3)
+    651  f2d5		       a4 81		      ldy	playerY	; (3)
+    652  f2d7
+    653  f2d7		       a5 85		      lda	isPlayerDead	; (3)
+    654  f2d9		       d0 33		      bne	skipMovement	; (2/3)
+    655  f2db
+    656  f2db		       a9 80	   movement   lda	#RIGHT	; (2)
+    657  f2dd		       24 84		      bit	playerMove	; (3)
+    658  f2df		       f0 09		      beq	notMovingRight	; (2/3)
+    659  f2e1		       e8		      inx		; (2)
+    660  f2e2		       e8		      inx		; (2)
+    661  f2e3		       a9 08		      lda	#%00001000	; (2)
+    662  f2e5		       85 0b		      sta	REFP0	; (3)
+    663  f2e7		       4c 0e f3 	      jmp	skipMovement	; (3)
+    664  f2ea
+    665  f2ea		       a9 40	   notMovingRight lda	#LEFT	; (2)
+    666  f2ec		       24 84		      bit	playerMove	; (3)
+    667  f2ee		       f0 09		      beq	notMovingLeft	; (2/3)
+    668  f2f0		       ca		      dex		; (2)
+    669  f2f1		       ca		      dex		; (2)
+    670  f2f2		       a9 00		      lda	#0	; (2)
+    671  f2f4		       85 0b		      sta	REFP0	; (3)
+    672  f2f6		       4c 0e f3 	      jmp	skipMovement	; (3)
+    673  f2f9
+    674  f2f9		       a9 20	   notMovingLeft lda	#DOWN	; (2)
+    675  f2fb		       24 84		      bit	playerMove	; (3)
+    676  f2fd		       f0 06		      beq	notMovingDown	; (2/3)
+    677  f2ff		       88		      dey		; (2)
+    678  f300		       88		      dey		; (2)
+    679  f301		       88		      dey		; (2)
+    680  f302		       4c 0e f3 	      jmp	skipMovement	; (3)
+    681  f305
+    682  f305		       a9 10	   notMovingDown lda	#UP	; (2)
+    683  f307		       24 84		      bit	playerMove	; (3)
+    684  f309		       f0 03		      beq	skipMovement	; (2/3)
+    685  f30b		       c8		      iny		; (2)
+    686  f30c		       c8		      iny		; (2)
+    687  f30d		       c8		      iny		; (2)
+    688  f30e
+    689  f30e		       86 80	   skipMovement stx	playerX	; (3)
+    690  f310		       84 81		      sty	playerY	; (3)
+    691  f312
+    692  f312		       85 02		      sta	WSYNC	; (3)
+    693  f314
+    694  f314							;.............................. LAVA CHECK ............................................
+    695  f314		       a5 a3		      lda	lavaScreen	; (3)
+    696  f316		       c5 89		      cmp	screen	; (3)
+    697  f318		       d0 18		      bne	difLavaScreen	; (3)
+    698  f31a		       a5 a0		      lda	lavaHeight	; (3)
+    699  f31c		       18		      clc		; (2)
+    700  f31d		       e5 81		      sbc	playerY	; (3)
+    701  f31f		       90 1e		      bcc	notInLava	; (2/3)
+    702  f321		       a5 85		      lda	isPlayerDead	; (3)
+    703  f323		       a9 01		      lda	#1	; (2)
+    704  f325		       85 85		      sta	isPlayerDead	; (3)
+    705  f327		       a9 02		      lda	#DEAD_PLAYER_COL	; (2)
+    706  f329		       85 06		      sta	COLUP0	; (3)
+    707  f32b		       a9 00		      lda	#0	; (2)
+    708  f32d		       85 84		      sta	playerMove	; (3)	
+    709  f32f		       4c 3f f3 	      jmp	notInLava	; (3)
+    710  f332
+    711  f332		       18	   difLavaScreen clc		; (2)
+    712  f333		       e5 89		      sbc	screen	; (3)
+    713  f335		       90 08		      bcc	notInLava	; (2/3)
+    714  f337		       a9 01		      lda	#1	; (2)
+    715  f339		       85 85		      sta	isPlayerDead	; (3)
+    716  f33b		       a9 02		      lda	#DEAD_PLAYER_COL	; (2)
+    717  f33d		       85 06		      sta	COLUP0	; (3)
+    718  f33f		       85 02	   notInLava  sta	WSYNC	; (3)
+    719  f341
+    720  f341		       4c 2e f0 	      jmp	startFrame	; (3)
+    721  f344
+    722  f344							;######################################################################################
+    723  f344							;    ____			 _   _		       
+    724  f344							;   / __ \			| | (_) 	       
+    725  f344							;  | |  | |_ __   ___ _ __ __ _| |_ _	___  _ __  ___ 
+    726  f344							;  | |  | | '_ \ / _ \ '__/ _` | __| |/ _ \| '_ \/ __|
+    727  f344							;  | |__| | |_) |  __/ | | (_| | |_| | (_) | | | \__ \
+    728  f344							;   \____/| .__/ \___|_|  \__,_|\__|_|\___/|_| |_|___/
+    729  f344							;	   | |					       
+    730  f344							;	   |_|					       
+    731  f344							;######################################################################################
+    732  f344
+    733  f344				   divideTileHeight
+    734  f344				   .POS       SET	0
+    735  f344					      REPEAT	#SCREEN_H + 1
+    736  f344		       00		      .byte.b	.POS / #TILE_H
+    737  f344				   .POS       SET	.POS + 1
+    735  f344					      REPEND
+    736  f345		       00		      .byte.b	.POS / #TILE_H
+    737  f345				   .POS       SET	.POS + 1
+    735  f345					      REPEND
+    736  f346		       00		      .byte.b	.POS / #TILE_H
+    737  f346				   .POS       SET	.POS + 1
+    735  f346					      REPEND
+    736  f347		       00		      .byte.b	.POS / #TILE_H
+    737  f347				   .POS       SET	.POS + 1
+    735  f347					      REPEND
+    736  f348		       00		      .byte.b	.POS / #TILE_H
+    737  f348				   .POS       SET	.POS + 1
+    735  f348					      REPEND
+    736  f349		       00		      .byte.b	.POS / #TILE_H
+    737  f349				   .POS       SET	.POS + 1
+    735  f349					      REPEND
+    736  f34a		       00		      .byte.b	.POS / #TILE_H
+    737  f34a				   .POS       SET	.POS + 1
+    735  f34a					      REPEND
+    736  f34b		       00		      .byte.b	.POS / #TILE_H
+    737  f34b				   .POS       SET	.POS + 1
+    735  f34b					      REPEND
+    736  f34c		       00		      .byte.b	.POS / #TILE_H
+    737  f34c				   .POS       SET	.POS + 1
+    735  f34c					      REPEND
+    736  f34d		       00		      .byte.b	.POS / #TILE_H
+    737  f34d				   .POS       SET	.POS + 1
+    735  f34d					      REPEND
+    736  f34e		       00		      .byte.b	.POS / #TILE_H
+    737  f34e				   .POS       SET	.POS + 1
+    735  f34e					      REPEND
+    736  f34f		       00		      .byte.b	.POS / #TILE_H
+    737  f34f				   .POS       SET	.POS + 1
+    735  f34f					      REPEND
+    736  f350		       00		      .byte.b	.POS / #TILE_H
+    737  f350				   .POS       SET	.POS + 1
+    735  f350					      REPEND
+    736  f351		       00		      .byte.b	.POS / #TILE_H
+    737  f351				   .POS       SET	.POS + 1
+    735  f351					      REPEND
+    736  f352		       00		      .byte.b	.POS / #TILE_H
+    737  f352				   .POS       SET	.POS + 1
+    735  f352					      REPEND
+    736  f353		       00		      .byte.b	.POS / #TILE_H
+    737  f353				   .POS       SET	.POS + 1
+    735  f353					      REPEND
+    736  f354		       01		      .byte.b	.POS / #TILE_H
+    737  f354				   .POS       SET	.POS + 1
+    735  f354					      REPEND
+    736  f355		       01		      .byte.b	.POS / #TILE_H
+    737  f355				   .POS       SET	.POS + 1
+    735  f355					      REPEND
+    736  f356		       01		      .byte.b	.POS / #TILE_H
+    737  f356				   .POS       SET	.POS + 1
+    735  f356					      REPEND
+    736  f357		       01		      .byte.b	.POS / #TILE_H
+    737  f357				   .POS       SET	.POS + 1
+    735  f357					      REPEND
+    736  f358		       01		      .byte.b	.POS / #TILE_H
+    737  f358				   .POS       SET	.POS + 1
+    735  f358					      REPEND
+    736  f359		       01		      .byte.b	.POS / #TILE_H
+    737  f359				   .POS       SET	.POS + 1
+    735  f359					      REPEND
+    736  f35a		       01		      .byte.b	.POS / #TILE_H
+    737  f35a				   .POS       SET	.POS + 1
+    735  f35a					      REPEND
+    736  f35b		       01		      .byte.b	.POS / #TILE_H
+    737  f35b				   .POS       SET	.POS + 1
+    735  f35b					      REPEND
+    736  f35c		       01		      .byte.b	.POS / #TILE_H
+    737  f35c				   .POS       SET	.POS + 1
+    735  f35c					      REPEND
+    736  f35d		       01		      .byte.b	.POS / #TILE_H
+    737  f35d				   .POS       SET	.POS + 1
+    735  f35d					      REPEND
+    736  f35e		       01		      .byte.b	.POS / #TILE_H
+    737  f35e				   .POS       SET	.POS + 1
+    735  f35e					      REPEND
+    736  f35f		       01		      .byte.b	.POS / #TILE_H
+    737  f35f				   .POS       SET	.POS + 1
+    735  f35f					      REPEND
+    736  f360		       01		      .byte.b	.POS / #TILE_H
+    737  f360				   .POS       SET	.POS + 1
+    735  f360					      REPEND
+    736  f361		       01		      .byte.b	.POS / #TILE_H
+    737  f361				   .POS       SET	.POS + 1
+    735  f361					      REPEND
+    736  f362		       01		      .byte.b	.POS / #TILE_H
+    737  f362				   .POS       SET	.POS + 1
+    735  f362					      REPEND
+    736  f363		       01		      .byte.b	.POS / #TILE_H
+    737  f363				   .POS       SET	.POS + 1
+    735  f363					      REPEND
+    736  f364		       02		      .byte.b	.POS / #TILE_H
+    737  f364				   .POS       SET	.POS + 1
+    735  f364					      REPEND
+    736  f365		       02		      .byte.b	.POS / #TILE_H
+    737  f365				   .POS       SET	.POS + 1
+    735  f365					      REPEND
+    736  f366		       02		      .byte.b	.POS / #TILE_H
+    737  f366				   .POS       SET	.POS + 1
+    735  f366					      REPEND
+    736  f367		       02		      .byte.b	.POS / #TILE_H
+    737  f367				   .POS       SET	.POS + 1
+    735  f367					      REPEND
+    736  f368		       02		      .byte.b	.POS / #TILE_H
+    737  f368				   .POS       SET	.POS + 1
+    735  f368					      REPEND
+    736  f369		       02		      .byte.b	.POS / #TILE_H
+    737  f369				   .POS       SET	.POS + 1
+    735  f369					      REPEND
+    736  f36a		       02		      .byte.b	.POS / #TILE_H
+    737  f36a				   .POS       SET	.POS + 1
+    735  f36a					      REPEND
+    736  f36b		       02		      .byte.b	.POS / #TILE_H
+    737  f36b				   .POS       SET	.POS + 1
+    735  f36b					      REPEND
+    736  f36c		       02		      .byte.b	.POS / #TILE_H
+    737  f36c				   .POS       SET	.POS + 1
+    735  f36c					      REPEND
+    736  f36d		       02		      .byte.b	.POS / #TILE_H
+    737  f36d				   .POS       SET	.POS + 1
+    735  f36d					      REPEND
+    736  f36e		       02		      .byte.b	.POS / #TILE_H
+    737  f36e				   .POS       SET	.POS + 1
+    735  f36e					      REPEND
+    736  f36f		       02		      .byte.b	.POS / #TILE_H
+    737  f36f				   .POS       SET	.POS + 1
+    735  f36f					      REPEND
+    736  f370		       02		      .byte.b	.POS / #TILE_H
+    737  f370				   .POS       SET	.POS + 1
+    735  f370					      REPEND
+    736  f371		       02		      .byte.b	.POS / #TILE_H
+    737  f371				   .POS       SET	.POS + 1
+    735  f371					      REPEND
+    736  f372		       02		      .byte.b	.POS / #TILE_H
+    737  f372				   .POS       SET	.POS + 1
+    735  f372					      REPEND
+    736  f373		       02		      .byte.b	.POS / #TILE_H
+    737  f373				   .POS       SET	.POS + 1
+    735  f373					      REPEND
+    736  f374		       03		      .byte.b	.POS / #TILE_H
+    737  f374				   .POS       SET	.POS + 1
+    735  f374					      REPEND
+    736  f375		       03		      .byte.b	.POS / #TILE_H
+    737  f375				   .POS       SET	.POS + 1
+    735  f375					      REPEND
+    736  f376		       03		      .byte.b	.POS / #TILE_H
+    737  f376				   .POS       SET	.POS + 1
+    735  f376					      REPEND
+    736  f377		       03		      .byte.b	.POS / #TILE_H
+    737  f377				   .POS       SET	.POS + 1
+    735  f377					      REPEND
+    736  f378		       03		      .byte.b	.POS / #TILE_H
+    737  f378				   .POS       SET	.POS + 1
+    735  f378					      REPEND
+    736  f379		       03		      .byte.b	.POS / #TILE_H
+    737  f379				   .POS       SET	.POS + 1
+    735  f379					      REPEND
+    736  f37a		       03		      .byte.b	.POS / #TILE_H
+    737  f37a				   .POS       SET	.POS + 1
+    735  f37a					      REPEND
+    736  f37b		       03		      .byte.b	.POS / #TILE_H
+    737  f37b				   .POS       SET	.POS + 1
+    735  f37b					      REPEND
+    736  f37c		       03		      .byte.b	.POS / #TILE_H
+    737  f37c				   .POS       SET	.POS + 1
+    735  f37c					      REPEND
+    736  f37d		       03		      .byte.b	.POS / #TILE_H
+    737  f37d				   .POS       SET	.POS + 1
+    735  f37d					      REPEND
+    736  f37e		       03		      .byte.b	.POS / #TILE_H
+    737  f37e				   .POS       SET	.POS + 1
+    735  f37e					      REPEND
+    736  f37f		       03		      .byte.b	.POS / #TILE_H
+    737  f37f				   .POS       SET	.POS + 1
+    735  f37f					      REPEND
+    736  f380		       03		      .byte.b	.POS / #TILE_H
+    737  f380				   .POS       SET	.POS + 1
+    735  f380					      REPEND
+    736  f381		       03		      .byte.b	.POS / #TILE_H
+    737  f381				   .POS       SET	.POS + 1
+    735  f381					      REPEND
+    736  f382		       03		      .byte.b	.POS / #TILE_H
+    737  f382				   .POS       SET	.POS + 1
+    735  f382					      REPEND
+    736  f383		       03		      .byte.b	.POS / #TILE_H
+    737  f383				   .POS       SET	.POS + 1
+    735  f383					      REPEND
+    736  f384		       04		      .byte.b	.POS / #TILE_H
+    737  f384				   .POS       SET	.POS + 1
+    735  f384					      REPEND
+    736  f385		       04		      .byte.b	.POS / #TILE_H
+    737  f385				   .POS       SET	.POS + 1
+    735  f385					      REPEND
+    736  f386		       04		      .byte.b	.POS / #TILE_H
+    737  f386				   .POS       SET	.POS + 1
+    735  f386					      REPEND
+    736  f387		       04		      .byte.b	.POS / #TILE_H
+    737  f387				   .POS       SET	.POS + 1
+    735  f387					      REPEND
+    736  f388		       04		      .byte.b	.POS / #TILE_H
+    737  f388				   .POS       SET	.POS + 1
+    735  f388					      REPEND
+    736  f389		       04		      .byte.b	.POS / #TILE_H
+    737  f389				   .POS       SET	.POS + 1
+    735  f389					      REPEND
+    736  f38a		       04		      .byte.b	.POS / #TILE_H
+    737  f38a				   .POS       SET	.POS + 1
+    735  f38a					      REPEND
+    736  f38b		       04		      .byte.b	.POS / #TILE_H
+    737  f38b				   .POS       SET	.POS + 1
+    735  f38b					      REPEND
+    736  f38c		       04		      .byte.b	.POS / #TILE_H
+    737  f38c				   .POS       SET	.POS + 1
+    735  f38c					      REPEND
+    736  f38d		       04		      .byte.b	.POS / #TILE_H
+    737  f38d				   .POS       SET	.POS + 1
+    735  f38d					      REPEND
+    736  f38e		       04		      .byte.b	.POS / #TILE_H
+    737  f38e				   .POS       SET	.POS + 1
+    735  f38e					      REPEND
+    736  f38f		       04		      .byte.b	.POS / #TILE_H
+    737  f38f				   .POS       SET	.POS + 1
+    735  f38f					      REPEND
+    736  f390		       04		      .byte.b	.POS / #TILE_H
+    737  f390				   .POS       SET	.POS + 1
+    735  f390					      REPEND
+    736  f391		       04		      .byte.b	.POS / #TILE_H
+    737  f391				   .POS       SET	.POS + 1
+    735  f391					      REPEND
+    736  f392		       04		      .byte.b	.POS / #TILE_H
+    737  f392				   .POS       SET	.POS + 1
+    735  f392					      REPEND
+    736  f393		       04		      .byte.b	.POS / #TILE_H
+    737  f393				   .POS       SET	.POS + 1
+    735  f393					      REPEND
+    736  f394		       05		      .byte.b	.POS / #TILE_H
+    737  f394				   .POS       SET	.POS + 1
+    735  f394					      REPEND
+    736  f395		       05		      .byte.b	.POS / #TILE_H
+    737  f395				   .POS       SET	.POS + 1
+    735  f395					      REPEND
+    736  f396		       05		      .byte.b	.POS / #TILE_H
+    737  f396				   .POS       SET	.POS + 1
+    735  f396					      REPEND
+    736  f397		       05		      .byte.b	.POS / #TILE_H
+    737  f397				   .POS       SET	.POS + 1
+    735  f397					      REPEND
+    736  f398		       05		      .byte.b	.POS / #TILE_H
+    737  f398				   .POS       SET	.POS + 1
+    735  f398					      REPEND
+    736  f399		       05		      .byte.b	.POS / #TILE_H
+    737  f399				   .POS       SET	.POS + 1
+    735  f399					      REPEND
+    736  f39a		       05		      .byte.b	.POS / #TILE_H
+    737  f39a				   .POS       SET	.POS + 1
+    735  f39a					      REPEND
+    736  f39b		       05		      .byte.b	.POS / #TILE_H
+    737  f39b				   .POS       SET	.POS + 1
+    735  f39b					      REPEND
+    736  f39c		       05		      .byte.b	.POS / #TILE_H
+    737  f39c				   .POS       SET	.POS + 1
+    735  f39c					      REPEND
+    736  f39d		       05		      .byte.b	.POS / #TILE_H
+    737  f39d				   .POS       SET	.POS + 1
+    735  f39d					      REPEND
+    736  f39e		       05		      .byte.b	.POS / #TILE_H
+    737  f39e				   .POS       SET	.POS + 1
+    735  f39e					      REPEND
+    736  f39f		       05		      .byte.b	.POS / #TILE_H
+    737  f39f				   .POS       SET	.POS + 1
+    735  f39f					      REPEND
+    736  f3a0		       05		      .byte.b	.POS / #TILE_H
+    737  f3a0				   .POS       SET	.POS + 1
+    735  f3a0					      REPEND
+    736  f3a1		       05		      .byte.b	.POS / #TILE_H
+    737  f3a1				   .POS       SET	.POS + 1
+    735  f3a1					      REPEND
+    736  f3a2		       05		      .byte.b	.POS / #TILE_H
+    737  f3a2				   .POS       SET	.POS + 1
+    735  f3a2					      REPEND
+    736  f3a3		       05		      .byte.b	.POS / #TILE_H
+    737  f3a3				   .POS       SET	.POS + 1
+    735  f3a3					      REPEND
+    736  f3a4		       06		      .byte.b	.POS / #TILE_H
+    737  f3a4				   .POS       SET	.POS + 1
+    735  f3a4					      REPEND
+    736  f3a5		       06		      .byte.b	.POS / #TILE_H
+    737  f3a5				   .POS       SET	.POS + 1
+    735  f3a5					      REPEND
+    736  f3a6		       06		      .byte.b	.POS / #TILE_H
+    737  f3a6				   .POS       SET	.POS + 1
+    735  f3a6					      REPEND
+    736  f3a7		       06		      .byte.b	.POS / #TILE_H
+    737  f3a7				   .POS       SET	.POS + 1
+    735  f3a7					      REPEND
+    736  f3a8		       06		      .byte.b	.POS / #TILE_H
+    737  f3a8				   .POS       SET	.POS + 1
+    735  f3a8					      REPEND
+    736  f3a9		       06		      .byte.b	.POS / #TILE_H
+    737  f3a9				   .POS       SET	.POS + 1
+    735  f3a9					      REPEND
+    736  f3aa		       06		      .byte.b	.POS / #TILE_H
+    737  f3aa				   .POS       SET	.POS + 1
+    735  f3aa					      REPEND
+    736  f3ab		       06		      .byte.b	.POS / #TILE_H
+    737  f3ab				   .POS       SET	.POS + 1
+    735  f3ab					      REPEND
+    736  f3ac		       06		      .byte.b	.POS / #TILE_H
+    737  f3ac				   .POS       SET	.POS + 1
+    735  f3ac					      REPEND
+    736  f3ad		       06		      .byte.b	.POS / #TILE_H
+    737  f3ad				   .POS       SET	.POS + 1
+    735  f3ad					      REPEND
+    736  f3ae		       06		      .byte.b	.POS / #TILE_H
+    737  f3ae				   .POS       SET	.POS + 1
+    735  f3ae					      REPEND
+    736  f3af		       06		      .byte.b	.POS / #TILE_H
+    737  f3af				   .POS       SET	.POS + 1
+    735  f3af					      REPEND
+    736  f3b0		       06		      .byte.b	.POS / #TILE_H
+    737  f3b0				   .POS       SET	.POS + 1
+    735  f3b0					      REPEND
+    736  f3b1		       06		      .byte.b	.POS / #TILE_H
+    737  f3b1				   .POS       SET	.POS + 1
+    735  f3b1					      REPEND
+    736  f3b2		       06		      .byte.b	.POS / #TILE_H
+    737  f3b2				   .POS       SET	.POS + 1
+    735  f3b2					      REPEND
+    736  f3b3		       06		      .byte.b	.POS / #TILE_H
+    737  f3b3				   .POS       SET	.POS + 1
+    735  f3b3					      REPEND
+    736  f3b4		       07		      .byte.b	.POS / #TILE_H
+    737  f3b4				   .POS       SET	.POS + 1
+    735  f3b4					      REPEND
+    736  f3b5		       07		      .byte.b	.POS / #TILE_H
+    737  f3b5				   .POS       SET	.POS + 1
+    735  f3b5					      REPEND
+    736  f3b6		       07		      .byte.b	.POS / #TILE_H
+    737  f3b6				   .POS       SET	.POS + 1
+    735  f3b6					      REPEND
+    736  f3b7		       07		      .byte.b	.POS / #TILE_H
+    737  f3b7				   .POS       SET	.POS + 1
+    735  f3b7					      REPEND
+    736  f3b8		       07		      .byte.b	.POS / #TILE_H
+    737  f3b8				   .POS       SET	.POS + 1
+    735  f3b8					      REPEND
+    736  f3b9		       07		      .byte.b	.POS / #TILE_H
+    737  f3b9				   .POS       SET	.POS + 1
+    735  f3b9					      REPEND
+    736  f3ba		       07		      .byte.b	.POS / #TILE_H
+    737  f3ba				   .POS       SET	.POS + 1
+    735  f3ba					      REPEND
+    736  f3bb		       07		      .byte.b	.POS / #TILE_H
+    737  f3bb				   .POS       SET	.POS + 1
+    735  f3bb					      REPEND
+    736  f3bc		       07		      .byte.b	.POS / #TILE_H
+    737  f3bc				   .POS       SET	.POS + 1
+    735  f3bc					      REPEND
+    736  f3bd		       07		      .byte.b	.POS / #TILE_H
+    737  f3bd				   .POS       SET	.POS + 1
+    735  f3bd					      REPEND
+    736  f3be		       07		      .byte.b	.POS / #TILE_H
+    737  f3be				   .POS       SET	.POS + 1
+    735  f3be					      REPEND
+    736  f3bf		       07		      .byte.b	.POS / #TILE_H
+    737  f3bf				   .POS       SET	.POS + 1
+    735  f3bf					      REPEND
+    736  f3c0		       07		      .byte.b	.POS / #TILE_H
+    737  f3c0				   .POS       SET	.POS + 1
+    735  f3c0					      REPEND
+    736  f3c1		       07		      .byte.b	.POS / #TILE_H
+    737  f3c1				   .POS       SET	.POS + 1
+    735  f3c1					      REPEND
+    736  f3c2		       07		      .byte.b	.POS / #TILE_H
+    737  f3c2				   .POS       SET	.POS + 1
+    735  f3c2					      REPEND
+    736  f3c3		       07		      .byte.b	.POS / #TILE_H
+    737  f3c3				   .POS       SET	.POS + 1
+    735  f3c3					      REPEND
+    736  f3c4		       08		      .byte.b	.POS / #TILE_H
+    737  f3c4				   .POS       SET	.POS + 1
+    735  f3c4					      REPEND
+    736  f3c5		       08		      .byte.b	.POS / #TILE_H
+    737  f3c5				   .POS       SET	.POS + 1
+    735  f3c5					      REPEND
+    736  f3c6		       08		      .byte.b	.POS / #TILE_H
+    737  f3c6				   .POS       SET	.POS + 1
+    735  f3c6					      REPEND
+    736  f3c7		       08		      .byte.b	.POS / #TILE_H
+    737  f3c7				   .POS       SET	.POS + 1
+    735  f3c7					      REPEND
+    736  f3c8		       08		      .byte.b	.POS / #TILE_H
+    737  f3c8				   .POS       SET	.POS + 1
+    735  f3c8					      REPEND
+    736  f3c9		       08		      .byte.b	.POS / #TILE_H
+    737  f3c9				   .POS       SET	.POS + 1
+    735  f3c9					      REPEND
+    736  f3ca		       08		      .byte.b	.POS / #TILE_H
+    737  f3ca				   .POS       SET	.POS + 1
+    735  f3ca					      REPEND
+    736  f3cb		       08		      .byte.b	.POS / #TILE_H
+    737  f3cb				   .POS       SET	.POS + 1
+    735  f3cb					      REPEND
+    736  f3cc		       08		      .byte.b	.POS / #TILE_H
+    737  f3cc				   .POS       SET	.POS + 1
+    735  f3cc					      REPEND
+    736  f3cd		       08		      .byte.b	.POS / #TILE_H
+    737  f3cd				   .POS       SET	.POS + 1
+    735  f3cd					      REPEND
+    736  f3ce		       08		      .byte.b	.POS / #TILE_H
+    737  f3ce				   .POS       SET	.POS + 1
+    735  f3ce					      REPEND
+    736  f3cf		       08		      .byte.b	.POS / #TILE_H
+    737  f3cf				   .POS       SET	.POS + 1
+    735  f3cf					      REPEND
+    736  f3d0		       08		      .byte.b	.POS / #TILE_H
+    737  f3d0				   .POS       SET	.POS + 1
+    735  f3d0					      REPEND
+    736  f3d1		       08		      .byte.b	.POS / #TILE_H
+    737  f3d1				   .POS       SET	.POS + 1
+    735  f3d1					      REPEND
+    736  f3d2		       08		      .byte.b	.POS / #TILE_H
+    737  f3d2				   .POS       SET	.POS + 1
+    735  f3d2					      REPEND
+    736  f3d3		       08		      .byte.b	.POS / #TILE_H
+    737  f3d3				   .POS       SET	.POS + 1
+    735  f3d3					      REPEND
+    736  f3d4		       09		      .byte.b	.POS / #TILE_H
+    737  f3d4				   .POS       SET	.POS + 1
+    735  f3d4					      REPEND
+    736  f3d5		       09		      .byte.b	.POS / #TILE_H
+    737  f3d5				   .POS       SET	.POS + 1
+    735  f3d5					      REPEND
+    736  f3d6		       09		      .byte.b	.POS / #TILE_H
+    737  f3d6				   .POS       SET	.POS + 1
+    735  f3d6					      REPEND
+    736  f3d7		       09		      .byte.b	.POS / #TILE_H
+    737  f3d7				   .POS       SET	.POS + 1
+    735  f3d7					      REPEND
+    736  f3d8		       09		      .byte.b	.POS / #TILE_H
+    737  f3d8				   .POS       SET	.POS + 1
+    735  f3d8					      REPEND
+    736  f3d9		       09		      .byte.b	.POS / #TILE_H
+    737  f3d9				   .POS       SET	.POS + 1
+    735  f3d9					      REPEND
+    736  f3da		       09		      .byte.b	.POS / #TILE_H
+    737  f3da				   .POS       SET	.POS + 1
+    735  f3da					      REPEND
+    736  f3db		       09		      .byte.b	.POS / #TILE_H
+    737  f3db				   .POS       SET	.POS + 1
+    735  f3db					      REPEND
+    736  f3dc		       09		      .byte.b	.POS / #TILE_H
+    737  f3dc				   .POS       SET	.POS + 1
+    735  f3dc					      REPEND
+    736  f3dd		       09		      .byte.b	.POS / #TILE_H
+    737  f3dd				   .POS       SET	.POS + 1
+    735  f3dd					      REPEND
+    736  f3de		       09		      .byte.b	.POS / #TILE_H
+    737  f3de				   .POS       SET	.POS + 1
+    735  f3de					      REPEND
+    736  f3df		       09		      .byte.b	.POS / #TILE_H
+    737  f3df				   .POS       SET	.POS + 1
+    735  f3df					      REPEND
+    736  f3e0		       09		      .byte.b	.POS / #TILE_H
+    737  f3e0				   .POS       SET	.POS + 1
+    735  f3e0					      REPEND
+    736  f3e1		       09		      .byte.b	.POS / #TILE_H
+    737  f3e1				   .POS       SET	.POS + 1
+    735  f3e1					      REPEND
+    736  f3e2		       09		      .byte.b	.POS / #TILE_H
+    737  f3e2				   .POS       SET	.POS + 1
+    735  f3e2					      REPEND
+    736  f3e3		       09		      .byte.b	.POS / #TILE_H
+    737  f3e3				   .POS       SET	.POS + 1
+    735  f3e3					      REPEND
+    736  f3e4		       0a		      .byte.b	.POS / #TILE_H
+    737  f3e4				   .POS       SET	.POS + 1
+    735  f3e4					      REPEND
+    736  f3e5		       0a		      .byte.b	.POS / #TILE_H
+    737  f3e5				   .POS       SET	.POS + 1
+    735  f3e5					      REPEND
+    736  f3e6		       0a		      .byte.b	.POS / #TILE_H
+    737  f3e6				   .POS       SET	.POS + 1
+    735  f3e6					      REPEND
+    736  f3e7		       0a		      .byte.b	.POS / #TILE_H
+    737  f3e7				   .POS       SET	.POS + 1
+    735  f3e7					      REPEND
+    736  f3e8		       0a		      .byte.b	.POS / #TILE_H
+    737  f3e8				   .POS       SET	.POS + 1
+    735  f3e8					      REPEND
+    736  f3e9		       0a		      .byte.b	.POS / #TILE_H
+    737  f3e9				   .POS       SET	.POS + 1
+    735  f3e9					      REPEND
+    736  f3ea		       0a		      .byte.b	.POS / #TILE_H
+    737  f3ea				   .POS       SET	.POS + 1
+    735  f3ea					      REPEND
+    736  f3eb		       0a		      .byte.b	.POS / #TILE_H
+    737  f3eb				   .POS       SET	.POS + 1
+    735  f3eb					      REPEND
+    736  f3ec		       0a		      .byte.b	.POS / #TILE_H
+    737  f3ec				   .POS       SET	.POS + 1
+    735  f3ec					      REPEND
+    736  f3ed		       0a		      .byte.b	.POS / #TILE_H
+    737  f3ed				   .POS       SET	.POS + 1
+    735  f3ed					      REPEND
+    736  f3ee		       0a		      .byte.b	.POS / #TILE_H
+    737  f3ee				   .POS       SET	.POS + 1
+    735  f3ee					      REPEND
+    736  f3ef		       0a		      .byte.b	.POS / #TILE_H
+    737  f3ef				   .POS       SET	.POS + 1
+    735  f3ef					      REPEND
+    736  f3f0		       0a		      .byte.b	.POS / #TILE_H
+    737  f3f0				   .POS       SET	.POS + 1
+    735  f3f0					      REPEND
+    736  f3f1		       0a		      .byte.b	.POS / #TILE_H
+    737  f3f1				   .POS       SET	.POS + 1
+    735  f3f1					      REPEND
+    736  f3f2		       0a		      .byte.b	.POS / #TILE_H
+    737  f3f2				   .POS       SET	.POS + 1
+    735  f3f2					      REPEND
+    736  f3f3		       0a		      .byte.b	.POS / #TILE_H
+    737  f3f3				   .POS       SET	.POS + 1
+    735  f3f3					      REPEND
+    736  f3f4		       0b		      .byte.b	.POS / #TILE_H
+    737  f3f4				   .POS       SET	.POS + 1
+    735  f3f4					      REPEND
+    736  f3f5		       0b		      .byte.b	.POS / #TILE_H
+    737  f3f5				   .POS       SET	.POS + 1
+    735  f3f5					      REPEND
+    736  f3f6		       0b		      .byte.b	.POS / #TILE_H
+    737  f3f6				   .POS       SET	.POS + 1
+    735  f3f6					      REPEND
+    736  f3f7		       0b		      .byte.b	.POS / #TILE_H
+    737  f3f7				   .POS       SET	.POS + 1
+    735  f3f7					      REPEND
+    736  f3f8		       0b		      .byte.b	.POS / #TILE_H
+    737  f3f8				   .POS       SET	.POS + 1
+    735  f3f8					      REPEND
+    736  f3f9		       0b		      .byte.b	.POS / #TILE_H
+    737  f3f9				   .POS       SET	.POS + 1
+    735  f3f9					      REPEND
+    736  f3fa		       0b		      .byte.b	.POS / #TILE_H
+    737  f3fa				   .POS       SET	.POS + 1
+    735  f3fa					      REPEND
+    736  f3fb		       0b		      .byte.b	.POS / #TILE_H
+    737  f3fb				   .POS       SET	.POS + 1
+    735  f3fb					      REPEND
+    736  f3fc		       0b		      .byte.b	.POS / #TILE_H
+    737  f3fc				   .POS       SET	.POS + 1
+    735  f3fc					      REPEND
+    736  f3fd		       0b		      .byte.b	.POS / #TILE_H
+    737  f3fd				   .POS       SET	.POS + 1
+    735  f3fd					      REPEND
+    736  f3fe		       0b		      .byte.b	.POS / #TILE_H
+    737  f3fe				   .POS       SET	.POS + 1
+    735  f3fe					      REPEND
+    736  f3ff		       0b		      .byte.b	.POS / #TILE_H
+    737  f3ff				   .POS       SET	.POS + 1
+    735  f3ff					      REPEND
+    736  f400		       0b		      .byte.b	.POS / #TILE_H
+    737  f400				   .POS       SET	.POS + 1
+    735  f400					      REPEND
+    736  f401		       0b		      .byte.b	.POS / #TILE_H
+    737  f401				   .POS       SET	.POS + 1
+    735  f401					      REPEND
+    736  f402		       0b		      .byte.b	.POS / #TILE_H
+    737  f402				   .POS       SET	.POS + 1
+    735  f402					      REPEND
+    736  f403		       0b		      .byte.b	.POS / #TILE_H
+    737  f403				   .POS       SET	.POS + 1
+    735  f403					      REPEND
+    736  f404		       0c		      .byte.b	.POS / #TILE_H
+    737  f404				   .POS       SET	.POS + 1
+    738  f405					      REPEND
+    739  f405
+    740  f405				   multFive
+    741  f405				   .POS       SET	0
+    742  f405					      REPEAT	#10
+    743  f405		       00		      .byte.b	.POS * #5
+    744  f405				   .POS       SET	.POS + 1
+    742  f405					      REPEND
+    743  f406		       05		      .byte.b	.POS * #5
+    744  f406				   .POS       SET	.POS + 1
+    742  f406					      REPEND
+    743  f407		       0a		      .byte.b	.POS * #5
+    744  f407				   .POS       SET	.POS + 1
+    742  f407					      REPEND
+    743  f408		       0f		      .byte.b	.POS * #5
+    744  f408				   .POS       SET	.POS + 1
+    742  f408					      REPEND
+    743  f409		       14		      .byte.b	.POS * #5
+    744  f409				   .POS       SET	.POS + 1
+    742  f409					      REPEND
+    743  f40a		       19		      .byte.b	.POS * #5
+    744  f40a				   .POS       SET	.POS + 1
+    742  f40a					      REPEND
+    743  f40b		       1e		      .byte.b	.POS * #5
+    744  f40b				   .POS       SET	.POS + 1
+    742  f40b					      REPEND
+    743  f40c		       23		      .byte.b	.POS * #5
+    744  f40c				   .POS       SET	.POS + 1
+    742  f40c					      REPEND
+    743  f40d		       28		      .byte.b	.POS * #5
+    744  f40d				   .POS       SET	.POS + 1
+    742  f40d					      REPEND
+    743  f40e		       2d		      .byte.b	.POS * #5
+    744  f40e				   .POS       SET	.POS + 1
+    745  f40f					      REPEND
+    746  f40f
+    747  f40f							;######################################################################################
+    748  f40f							;    _____	       _ _	      
+    749  f40f							;   / ____|	      (_) |	      
+    750  f40f							;  | (___  _ __  _ __ _| |_ ___  ___ 
+    751  f40f							;   \___ \| '_ \| '__| | __/ _ \/ __|
+    752  f40f							;   ____) | |_) | |  | | ||  __/\__ \
+    753  f40f							;  |_____/| .__/|_|  |_|\__\___||___/
+    754  f40f							;	   | |			      
+    755  f40f							;	   |_|						  
+    756  f40f							;######################################################################################
+    757  f40f
+    758  f40f		       00	   PLAYER_SPR .byte.b	%00000000
+    759  f410		       6c		      .byte.b	%01101100
+    760  f411		       24		      .byte.b	%00100100
+    761  f412		       24		      .byte.b	%00100100
+    762  f413		       2c		      .byte.b	%00101100
+    763  f414		       bd		      .byte.b	%10111101
+    764  f415		       bd		      .byte.b	%10111101
+    765  f416		       7e		      .byte.b	%01111110
+    766  f417		       7e		      .byte.b	%01111110
+    767  f418		       3c		      .byte.b	%00111100
+    768  f419		       18		      .byte.b	%00011000
+    769  f41a		       38		      .byte.b	%00111000
+    770  f41b		       38		      .byte.b	%00111000
+    771  f41c
+    772  f41c							;######################################################################################
+    773  f41c							;   _____  _		   __ _      _	   _   _____	    _	     
+    774  f41c							;  |  __ \| |		  / _(_)    | |   | | |  __ \	   | |	     
+    775  f41c							;  | |__) | | __ _ _	_| |_ _  ___| | __| | | |  | | __ _| |_ __ _ 
+    776  f41c							;  |  ___/| |/ _` | | | |  _| |/ _ \ |/ _` | | |  | |/ _` | __/ _` |
+    777  f41c							;  | |    | | (_| | |_| | | | |  __/ | (_| | | |__| | (_| | || (_| |
+    778  f41c							;  |_|    |_|\__,_|\__, |_| |_|\___|_|\__,_| |_____/ \__,_|\__\__,_|
+    779  f41c							;		     __/ |					     
+    780  f41c							;		    |___/										  
+    781  f41c							;######################################################################################
+    782  f41c
+------- FILE digits.h LEVEL 2 PASS 2
+      0  f41c					      include	"digits.h"
+      1  f41c				   DIGITS
+      2  f41c							; 00
+      3  f41c		       77		      .byte.b	%01110111
+      4  f41d		       55		      .byte.b	%01010101
+      5  f41e		       55		      .byte.b	%01010101
+      6  f41f		       55		      .byte.b	%01010101
+      7  f420		       77		      .byte.b	%01110111
+      8  f421							; 11
+      9  f421		       11		      .byte.b	%00010001
+     10  f422		       11		      .byte.b	%00010001
+     11  f423		       11		      .byte.b	%00010001
+     12  f424		       11		      .byte.b	%00010001
+     13  f425		       11		      .byte.b	%00010001
+     14  f426							; 22
+     15  f426		       77		      .byte.b	%01110111
+     16  f427		       11		      .byte.b	%00010001
+     17  f428		       77		      .byte.b	%01110111
+     18  f429		       44		      .byte.b	%01000100
+     19  f42a		       77		      .byte.b	%01110111
+     20  f42b							; 33
+     21  f42b		       77		      .byte.b	%01110111
+     22  f42c		       11		      .byte.b	%00010001
+     23  f42d		       33		      .byte.b	%00110011
+     24  f42e		       11		      .byte.b	%00010001
+     25  f42f		       77		      .byte.b	%01110111
+     26  f430							; 44
+     27  f430		       55		      .byte.b	%01010101
+     28  f431		       55		      .byte.b	%01010101
+     29  f432		       77		      .byte.b	%01110111
+     30  f433		       11		      .byte.b	%00010001
+     31  f434		       11		      .byte.b	%00010001
+     32  f435							; 55
+     33  f435		       77		      .byte.b	%01110111
+     34  f436		       44		      .byte.b	%01000100
+     35  f437		       77		      .byte.b	%01110111
+     36  f438		       11		      .byte.b	%00010001
+     37  f439		       77		      .byte.b	%01110111
+     38  f43a							; 66
+     39  f43a		       77		      .byte.b	%01110111
+     40  f43b		       44		      .byte.b	%01000100
+     41  f43c		       77		      .byte.b	%01110111
+     42  f43d		       55		      .byte.b	%01010101
+     43  f43e		       77		      .byte.b	%01110111
+     44  f43f							; 77
+     45  f43f		       77		      .byte.b	%01110111
+     46  f440		       11		      .byte.b	%00010001
+     47  f441		       11		      .byte.b	%00010001
+     48  f442		       11		      .byte.b	%00010001
+     49  f443		       11		      .byte.b	%00010001
+     50  f444							; 88
+     51  f444		       77		      .byte.b	%01110111
+     52  f445		       55		      .byte.b	%01010101
+     53  f446		       77		      .byte.b	%01110111
+     54  f447		       55		      .byte.b	%01010101
+     55  f448		       77		      .byte.b	%01110111
+     56  f449							; 99
+     57  f449		       77		      .byte.b	%01110111
+     58  f44a		       55		      .byte.b	%01010101
+     59  f44b		       77		      .byte.b	%01110111
+     60  f44c		       11		      .byte.b	%00010001
+     61  f44d		       77		      .byte.b	%01110111
+     62  f44e
+     63  f44e				   DIGITS_REV
+     64  f44e							; 00
+     65  f44e		       ee		      .byte.b	%11101110
+     66  f44f		       aa		      .byte.b	%10101010
+     67  f450		       aa		      .byte.b	%10101010
+     68  f451		       aa		      .byte.b	%10101010
+     69  f452		       ee		      .byte.b	%11101110
+     70  f453							; 11
+     71  f453		       88		      .byte.b	%10001000
+     72  f454		       88		      .byte.b	%10001000
+     73  f455		       88		      .byte.b	%10001000
+     74  f456		       88		      .byte.b	%10001000
+     75  f457		       88		      .byte.b	%10001000
+     76  f458							; 22
+     77  f458		       ee		      .byte.b	%11101110
+     78  f459		       88		      .byte.b	%10001000
+     79  f45a		       ee		      .byte.b	%11101110
+     80  f45b		       22		      .byte.b	%00100010
+     81  f45c		       ee		      .byte.b	%11101110
+     82  f45d							; 33
+     83  f45d		       ee		      .byte.b	%11101110
+     84  f45e		       88		      .byte.b	%10001000
+     85  f45f		       cc		      .byte.b	%11001100
+     86  f460		       88		      .byte.b	%10001000
+     87  f461		       ee		      .byte.b	%11101110
+     88  f462							; 44
+     89  f462		       aa		      .byte.b	%10101010
+     90  f463		       aa		      .byte.b	%10101010
+     91  f464		       ee		      .byte.b	%11101110
+     92  f465		       88		      .byte.b	%10001000
+     93  f466		       88		      .byte.b	%10001000
+     94  f467							; 55
+     95  f467		       ee		      .byte.b	%11101110
+     96  f468		       22		      .byte.b	%00100010
+     97  f469		       ee		      .byte.b	%11101110
+     98  f46a		       88		      .byte.b	%10001000
+     99  f46b		       ee		      .byte.b	%11101110
+    100  f46c							; 66
+    101  f46c		       ee		      .byte.b	%11101110
+    102  f46d		       22		      .byte.b	%00100010
+    103  f46e		       ee		      .byte.b	%11101110
+    104  f46f		       aa		      .byte.b	%10101010
+    105  f470		       ee		      .byte.b	%11101110
+    106  f471							; 77
+    107  f471		       ee		      .byte.b	%11101110
+    108  f472		       88		      .byte.b	%10001000
+    109  f473		       88		      .byte.b	%10001000
+    110  f474		       88		      .byte.b	%10001000
+    111  f475		       88		      .byte.b	%10001000
+    112  f476							; 88
+    113  f476		       ee		      .byte.b	%11101110
+    114  f477		       aa		      .byte.b	%10101010
+    115  f478		       ee		      .byte.b	%11101110
+    116  f479		       aa		      .byte.b	%10101010
+    117  f47a		       ee		      .byte.b	%11101110
+    118  f47b							; 99
+    119  f47b		       ee		      .byte.b	%11101110
+    120  f47c		       aa		      .byte.b	%10101010
+    121  f47d		       ee		      .byte.b	%11101110
+    122  f47e		       88		      .byte.b	%10001000
+    123  f47f		       ee		      .byte.b	%11101110
+    124  f480
+    125  f480				   LETTERS
+    126  f480							; M
+    127  f480		       22		      .byte.b	%00100010
+    128  f481		       36		      .byte.b	%00110110
+    129  f482		       2a		      .byte.b	%00101010
+    130  f483		       22		      .byte.b	%00100010
+    131  f484		       22		      .byte.b	%00100010
+------- FILE core-escape.asm
+    784  f485
+    785  f485				   PF0_DATA
+    786  f485							; Level 1
+    787  f485		       00		      .byte.b	#%00000000
+    788  f486		       00		      .byte.b	#%00000000
+    789  f487		       00		      .byte.b	#%00000000
+    790  f488		       c0		      .byte.b	#%11000000
+    791  f489		       c0		      .byte.b	#%11000000
+    792  f48a		       c0		      .byte.b	#%11000000
+    793  f48b		       f0		      .byte.b	#%11110000
+    794  f48c		       c0		      .byte.b	#%11000000
+    795  f48d		       80		      .byte.b	#%10000000
+    796  f48e		       80		      .byte.b	#%10000000
+    797  f48f		       f0		      .byte.b	#%11110000
+    798  f490		       f0		      .byte.b	#%11110000
+    799  f491							; Level 2
+    800  f491		       f0		      .byte.b	#%11110000
+    801  f492		       f0		      .byte.b	#%11110000
+    802  f493		       00		      .byte.b	#%00000000
+    803  f494		       f0		      .byte.b	#%11110000
+    804  f495		       70		      .byte.b	#%01110000
+    805  f496		       f0		      .byte.b	#%11110000
+    806  f497		       f0		      .byte.b	#%11110000
+    807  f498		       f0		      .byte.b	#%11110000
+    808  f499		       00		      .byte.b	#%00000000
+    809  f49a		       f0		      .byte.b	#%11110000
+    810  f49b		       f0		      .byte.b	#%11110000
+    811  f49c		       f0		      .byte.b	#%11110000
+    812  f49d							; Level 3
+    813  f49d		       f0		      .byte.b	#%11110000
+    814  f49e		       f0		      .byte.b	#%11110000
+    815  f49f		       f0		      .byte.b	#%11110000
+    816  f4a0		       00		      .byte.b	#%00000000
+    817  f4a1		       f0		      .byte.b	#%11110000
+    818  f4a2		       f0		      .byte.b	#%11110000
+    819  f4a3		       00		      .byte.b	#%00000000
+    820  f4a4		       f0		      .byte.b	#%11110000
+    821  f4a5		       f0		      .byte.b	#%11110000
+    822  f4a6		       f0		      .byte.b	#%11110000
+    823  f4a7		       f0		      .byte.b	#%11110000
+    824  f4a8		       f0		      .byte.b	#%11110000
+    825  f4a9							; Level 4
+    826  f4a9		       f0		      .byte.b	#%11110000
+    827  f4aa		       f0		      .byte.b	#%11110000
+    828  f4ab		       f0		      .byte.b	#%11110000
+    829  f4ac		       f0		      .byte.b	#%11110000
+    830  f4ad		       f0		      .byte.b	#%11110000
+    831  f4ae		       f0		      .byte.b	#%11110000
+    832  f4af		       f0		      .byte.b	#%11110000
+    833  f4b0		       f0		      .byte.b	#%11110000
+    834  f4b1		       f0		      .byte.b	#%11110000
+    835  f4b2		       f0		      .byte.b	#%11110000
+    836  f4b3		       f0		      .byte.b	#%11110000
+    837  f4b4		       f0		      .byte.b	#%11110000
+    838  f4b5							; Level 5
+    839  f4b5		       f0		      .byte.b	#%11110000
+    840  f4b6		       f0		      .byte.b	#%11110000
+    841  f4b7		       f0		      .byte.b	#%11110000
+    842  f4b8		       f0		      .byte.b	#%11110000
+    843  f4b9		       f0		      .byte.b	#%11110000
+    844  f4ba		       f0		      .byte.b	#%11110000
+    845  f4bb		       f0		      .byte.b	#%11110000
+    846  f4bc		       f0		      .byte.b	#%11110000
+    847  f4bd		       f0		      .byte.b	#%11110000
+    848  f4be		       f0		      .byte.b	#%11110000
+    849  f4bf		       f0		      .byte.b	#%11110000
+    850  f4c0		       f0		      .byte.b	#%11110000
+    851  f4c1							; Level 6
+    852  f4c1		       f0		      .byte.b	#%11110000
+    853  f4c2		       f0		      .byte.b	#%11110000
+    854  f4c3		       f0		      .byte.b	#%11110000
+    855  f4c4		       f0		      .byte.b	#%11110000
+    856  f4c5		       f0		      .byte.b	#%11110000
+    857  f4c6		       f0		      .byte.b	#%11110000
+    858  f4c7		       f0		      .byte.b	#%11110000
+    859  f4c8		       f0		      .byte.b	#%11110000
+    860  f4c9		       f0		      .byte.b	#%11110000
+    861  f4ca		       f0		      .byte.b	#%11110000
+    862  f4cb		       f0		      .byte.b	#%11110000
+    863  f4cc		       f0		      .byte.b	#%11110000
+    864  f4cd
+    865  f4cd				   PF1_DATA
+    866  f4cd							; Level 1
+    867  f4cd		       00		      .byte.b	#%00000000
+    868  f4ce		       00		      .byte.b	#%00000000
+    869  f4cf		       20		      .byte.b	#%00100000
+    870  f4d0		       7f		      .byte.b	#%01111111
+    871  f4d1		       ff		      .byte.b	#%11111111
+    872  f4d2		       ff		      .byte.b	#%11111111
+    873  f4d3		       ff		      .byte.b	#%11111111
+    874  f4d4		       ff		      .byte.b	#%11111111
+    875  f4d5		       ff		      .byte.b	#%11111111
+    876  f4d6		       ff		      .byte.b	#%11111111
+    877  f4d7		       ff		      .byte.b	#%11111111
+    878  f4d8		       ff		      .byte.b	#%11111111
+    879  f4d9							; Level 2
+    880  f4d9		       ff		      .byte.b	#%11111111
+    881  f4da		       ff		      .byte.b	#%11111111
+    882  f4db		       0f		      .byte.b	#%00001111
+    883  f4dc		       cf		      .byte.b	#%11001111
+    884  f4dd		       0b		      .byte.b	#%00001011
+    885  f4de		       43		      .byte.b	#%01000011
+    886  f4df		       e3		      .byte.b	#%11100011
+    887  f4e0		       f3		      .byte.b	#%11110011
+    888  f4e1		       03		      .byte.b	#%00000011
+    889  f4e2		       ff		      .byte.b	#%11111111
+    890  f4e3		       ff		      .byte.b	#%11111111
+    891  f4e4		       ff		      .byte.b	#%11111111
+    892  f4e5							; Level 3
+    893  f4e5		       ff		      .byte.b	#%11111111
+    894  f4e6		       fc		      .byte.b	#%11111100
+    895  f4e7		       fc		      .byte.b	#%11111100
+    896  f4e8		       0c		      .byte.b	#%00001100
+    897  f4e9		       cf		      .byte.b	#%11001111
+    898  f4ea		       0f		      .byte.b	#%00001111
+    899  f4eb		       1c		      .byte.b	#%00011100
+    900  f4ec		       fc		      .byte.b	#%11111100
+    901  f4ed		       fc		      .byte.b	#%11111100
+    902  f4ee		       ff		      .byte.b	#%11111111
+    903  f4ef		       ff		      .byte.b	#%11111111
+    904  f4f0		       ff		      .byte.b	#%11111111
+    905  f4f1							; Level 4
+    906  f4f1		       ff		      .byte.b	#%11111111
+    907  f4f2		       ff		      .byte.b	#%11111111
+    908  f4f3		       ff		      .byte.b	#%11111111
+    909  f4f4		       ff		      .byte.b	#%11111111
+    910  f4f5		       ff		      .byte.b	#%11111111
+    911  f4f6		       ff		      .byte.b	#%11111111
+    912  f4f7		       ff		      .byte.b	#%11111111
+    913  f4f8		       ff		      .byte.b	#%11111111
+    914  f4f9		       ff		      .byte.b	#%11111111
+    915  f4fa		       ff		      .byte.b	#%11111111
+    916  f4fb		       ff		      .byte.b	#%11111111
+    917  f4fc		       ff		      .byte.b	#%11111111
+    918  f4fd							; Level 5
+    919  f4fd		       ff		      .byte.b	#%11111111
+    920  f4fe		       ff		      .byte.b	#%11111111
+    921  f4ff		       ff		      .byte.b	#%11111111
+    922  f500		       ff		      .byte.b	#%11111111
+    923  f501		       ff		      .byte.b	#%11111111
+    924  f502		       ff		      .byte.b	#%11111111
+    925  f503		       ff		      .byte.b	#%11111111
+    926  f504		       ff		      .byte.b	#%11111111
+    927  f505		       ff		      .byte.b	#%11111111
+    928  f506		       ff		      .byte.b	#%11111111
+    929  f507		       ff		      .byte.b	#%11111111
+    930  f508		       ff		      .byte.b	#%11111111
+    931  f509							; Level 6
+    932  f509		       ff		      .byte.b	#%11111111
+    933  f50a		       ff		      .byte.b	#%11111111
+    934  f50b		       ff		      .byte.b	#%11111111
+    935  f50c		       ff		      .byte.b	#%11111111
+    936  f50d		       ff		      .byte.b	#%11111111
+    937  f50e		       ff		      .byte.b	#%11111111
+    938  f50f		       ff		      .byte.b	#%11111111
+    939  f510		       ff		      .byte.b	#%11111111
+    940  f511		       ff		      .byte.b	#%11111111
+    941  f512		       ff		      .byte.b	#%11111111
+    942  f513		       ff		      .byte.b	#%11111111
+    943  f514		       ff		      .byte.b	#%11111111
+    944  f515
+    945  f515				   PF2_DATA
+    946  f515							; Level 1
+    947  f515		       00		      .byte.b	#%00000000
+    948  f516		       40		      .byte.b	#%01000000
+    949  f517		       e0		      .byte.b	#%11100000
+    950  f518		       f1		      .byte.b	#%11110001
+    951  f519		       f3		      .byte.b	#%11110011
+    952  f51a		       33		      .byte.b	#%00110011
+    953  f51b		       03		      .byte.b	#%00000011
+    954  f51c		       2f		      .byte.b	#%00101111
+    955  f51d		       ff		      .byte.b	#%11111111
+    956  f51e		       3f		      .byte.b	#%00111111
+    957  f51f		       3f		      .byte.b	#%00111111
+    958  f520		       3f		      .byte.b	#%00111111
+    959  f521							; Level 2
+    960  f521		       3f		      .byte.b	#%00111111
+    961  f522		       37		      .byte.b	#%00110111
+    962  f523		       03		      .byte.b	#%00000011
+    963  f524		       31		      .byte.b	#%00110001
+    964  f525		       03		      .byte.b	#%00000011
+    965  f526		       ff		      .byte.b	#%11111111
+    966  f527		       01		      .byte.b	#%00000001
+    967  f528		       31		      .byte.b	#%00110001
+    968  f529		       03		      .byte.b	#%00000011
+    969  f52a		       37		      .byte.b	#%00110111
+    970  f52b		       3f		      .byte.b	#%00111111
+    971  f52c		       3f		      .byte.b	#%00111111
+    972  f52d							; Level 3
+    973  f52d		       3f		      .byte.b	#%00111111
+    974  f52e		       00		      .byte.b	#%00000000
+    975  f52f		       ff		      .byte.b	#%11111111
+    976  f530		       00		      .byte.b	#%00000000
+    977  f531		       ff		      .byte.b	#%11111111
+    978  f532		       00		      .byte.b	#%00000000
+    979  f533		       28		      .byte.b	#%00101000
+    980  f534		       ff		      .byte.b	#%11111111
+    981  f535		       00		      .byte.b	#%00000000
+    982  f536		       3f		      .byte.b	#%00111111
+    983  f537		       3f		      .byte.b	#%00111111
+    984  f538		       3f		      .byte.b	#%00111111
+    985  f539							; Level 4
+    986  f539		       3f		      .byte.b	#%00111111
+    987  f53a		       3f		      .byte.b	#%00111111
+    988  f53b		       3f		      .byte.b	#%00111111
+    989  f53c		       3f		      .byte.b	#%00111111
+    990  f53d		       3f		      .byte.b	#%00111111
+    991  f53e		       3f		      .byte.b	#%00111111
+    992  f53f		       3f		      .byte.b	#%00111111
+    993  f540		       3f		      .byte.b	#%00111111
+    994  f541		       3f		      .byte.b	#%00111111
+    995  f542		       3f		      .byte.b	#%00111111
+    996  f543		       3f		      .byte.b	#%00111111
+    997  f544		       3f		      .byte.b	#%00111111
+    998  f545							; Level 5
+    999  f545		       3f		      .byte.b	#%00111111
+   1000  f546		       3f		      .byte.b	#%00111111
+   1001  f547		       3f		      .byte.b	#%00111111
+   1002  f548		       3f		      .byte.b	#%00111111
+   1003  f549		       3f		      .byte.b	#%00111111
+   1004  f54a		       3f		      .byte.b	#%00111111
+   1005  f54b		       3f		      .byte.b	#%00111111
+   1006  f54c		       3f		      .byte.b	#%00111111
+   1007  f54d		       3f		      .byte.b	#%00111111
+   1008  f54e		       3f		      .byte.b	#%00111111
+   1009  f54f		       3f		      .byte.b	#%00111111
+   1010  f550		       3f		      .byte.b	#%00111111
+   1011  f551							; Level 6
+   1012  f551		       3f		      .byte.b	#%00111111
+   1013  f552		       3f		      .byte.b	#%00111111
+   1014  f553		       3f		      .byte.b	#%00111111
+   1015  f554		       3f		      .byte.b	#%00111111
+   1016  f555		       3f		      .byte.b	#%00111111
+   1017  f556		       3f		      .byte.b	#%00111111
+   1018  f557		       3f		      .byte.b	#%00111111
+   1019  f558		       3f		      .byte.b	#%00111111
+   1020  f559		       ff		      .byte.b	#%11111111
+   1021  f55a		       ff		      .byte.b	#%11111111
+   1022  f55b		       ff		      .byte.b	#%11111111
+   1023  f55c		       ff		      .byte.b	#%11111111
+   1024  f55d
+   1025  f55d							;######################################################################################
+   1026  f55d							;   ______	      _ 
+   1027  f55d							;  |  ____|	     | |
+   1028  f55d							;  | |__   _ __   __| |
+   1029  f55d							;  |  __| | '_ \ / _` |
+   1030  f55d							;  | |____| | | | (_| |
+   1031  f55d							;  |______|_| |_|\__,_|
+   1032  f55d							;									   
+   1033  f55d							;######################################################################################      
+   1034  f55d
+   1035  fffa					      org	$fffa
+   1036  fffa
+   1037  fffa				   interruptVectors
+   1038  fffa		       00 f0		      .word.w	reset	; nmi
+   1039  fffc		       00 f0		      .word.w	reset	; reset
+   1040  fffe		       00 f0		      .word.w	reset	; irq
