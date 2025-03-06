@@ -54,9 +54,9 @@ SCREEN_H		equ #192					; Screen height in scanlines
 PLAYER_H		equ #13						; Player height in scanlines
 TILE_H			equ	#16						; Tile height in scanlines
 TILES_COUNT		equ #12						; Tiles rows per screen
+SCR_PER_AREA	equ #2						; Telas por area
 
 DEFAULT_PF_COL	equ #$00					; Default playfield color
-CAVE_BG_COL		equ #$02					; Cave background color
 PLAYER_COL		equ #$0e					; Player color
 DEAD_PLAYER_COL	equ #$02					; Dead player color
 LAVA_COL_0		equ #$38					; First lava color
@@ -106,6 +106,8 @@ prevCollided	ds 1						; Indicates whether player collided
 tileTimer		ds 1						; Timer for tile changing
 screenOffset	ds 1						; Screen offset
 screen			ds 1						; Current screen
+areaScreen		ds 1						; Current area screen
+area			ds 1						; Current area
 
 score			ds 1						; Score
 prevScore		ds 1						; Previous score
@@ -123,7 +125,11 @@ lavaTimer		ds 1						; Timer for rise lava
 lavaColor		ds 1						; Current lava color
 lavaScreen		ds 1						; Current lava screen
 
-temp			ds 1 						; Temporary variable to store digits
+temp			ds 1 						; Temporary variable
+
+pf0Buffer		ds 12						; PF0 buffer
+pf1Buffer		ds 12						; PF1 buffer
+pf2Buffer		ds 12						; PF2 buffer
 
 				seg	main
 				org $f000
@@ -206,16 +212,109 @@ startFrame:		lda #0            			; (2)
 ;--------------------------------------------------------------------------------------
 
 ;.............................. EMPTY SCANLINES .......................................
-				ldx #0						; (2)
-verticalBlank:	sta WSYNC					; (3)				
-				inx							; (2)
-				cpx #6    					; (2)
-				bne verticalBlank			; (2/3)
+; 				ldx #0						; (2)
+; verticalBlank:	sta WSYNC					; (3)				
+; 				inx							; (2)
+; 				cpx #1    					; (2)
+; 				bne verticalBlank			; (2/3)
 
 ;.............................. RESET .................................................
 		        lda #%00000001				; (2)
                 bit SWCHB					; (3)
                 beq reset					; (2/3)
+				sta WSYNC					; (3)
+
+;.............................. PLAYFIELD BUFFER ......................................
+				ldy screenOffset			; (3)
+				ldx area					; (3)
+				beq caveBuffer				; (2/3)
+				dex							; (2)
+				beq jungleBuffer			; (2/3)
+				dex							; (2)
+				beq rocksBuffer				; (2/3)
+				dex							; (2)
+				beq mountainBuffer			; (2/3)
+				dex							; (2)
+				beq iceBuffer				; (2/3)
+				dex							; (2)
+				beq spaceBuffer				; (2/3)
+
+				ldx #0						; (2)
+
+caveBuffer:		lda PF0_CAVE,y				; (4)
+				sta pf0Buffer,x				; (3)
+				lda PF1_CAVE,y				; (4)
+				sta pf1Buffer,x				; (3)
+				lda PF2_CAVE,y				; (4)
+				sta pf2Buffer,x				; (3)
+				inx							; (2)
+				iny							; (2)			
+				cpx #12    					; (2)
+				bne caveBuffer				; (2/3)
+				jmp endPlayfieldBuffer		; (3)
+
+jungleBuffer:	lda PF0_JUNGLE,y			; (4)
+				sta pf0Buffer,x				; (3)
+				lda PF1_JUNGLE,y			; (4)
+				sta pf1Buffer,x				; (3)
+				lda PF2_JUNGLE,y			; (4)
+				sta pf2Buffer,x				; (3)
+				inx							; (2)
+				iny							; (2)		
+				cpx #12    					; (2)
+				bne jungleBuffer			; (2/3)
+				jmp endPlayfieldBuffer		; (3)
+
+rocksBuffer:	lda PF0_ROCKS,y				; (4)
+				sta pf0Buffer,x				; (3)
+				lda PF1_ROCKS,y				; (4)
+				sta pf1Buffer,x				; (3)
+				lda PF2_ROCKS,y				; (4)
+				sta pf2Buffer,x				; (3)
+				inx							; (2)
+				iny							; (2)
+				sta WSYNC					; (3)			
+				cpx #12    					; (2)
+				bne rocksBuffer				; (2/3)
+				jmp endPlayfieldBuffer		; (3)
+
+mountainBuffer:	lda PF0_MOUNTAIN,y			; (4)
+				sta pf0Buffer,x				; (3)
+				lda PF1_MOUNTAIN,y			; (4)
+				sta pf1Buffer,x				; (3)
+				lda PF2_MOUNTAIN,y			; (4)
+				sta pf2Buffer,x				; (3)
+				inx							; (2)
+				iny							; (2)			
+				cpx #12    					; (2)
+				bne mountainBuffer			; (2/3)
+				jmp endPlayfieldBuffer		; (3)
+
+iceBuffer:		lda PF0_ICE,y				; (4)
+				sta pf0Buffer,x				; (3)
+				lda PF1_ICE,y				; (4)
+				sta pf1Buffer,x				; (3)
+				lda PF2_ICE,y				; (4)
+				sta pf2Buffer,x				; (3)
+				inx							; (2)
+				iny							; (2)		
+				cpx #12    					; (2)
+				bne iceBuffer				; (2/3)
+				jmp endPlayfieldBuffer		; (3)
+
+spaceBuffer:	lda PF0_SPACE,y				; (4)
+				sta pf0Buffer,x				; (3)
+				lda PF1_SPACE,y				; (4)
+				sta pf1Buffer,x				; (3)
+				lda PF2_SPACE,y				; (4)
+				sta pf2Buffer,x				; (3)
+				inx							; (2)
+				iny							; (2)			
+				cpx #12    					; (2)
+				bne jungleBuffer			; (2/3)
+				jmp endPlayfieldBuffer		; (3)
+
+endPlayfieldBuffer:
 				sta WSYNC					; (3)
 
 ;.............................. LAVA ..................................................
@@ -370,6 +469,9 @@ scoreDigits:	ldy digitIdx0				; (3)
 				sta WSYNC					; (3)
 
 ;.............................. DRAWSCORE .............................................
+				lda #%11111110				; (2)
+				sta	CTRLPF					; (3)
+				
 				lda #%00000000				; (2)
 				sta PF0						; (3)
 				sta PF1						; (3)
@@ -407,11 +509,17 @@ drawScore:		lda #%00000000				; (2)
 				cpx #10    					; (2)
 				bne drawScore				; (2/3)
 
+				lda pf0Buffer				; (3)
+				and #%00000001				; (2)
+				eor	#%11111110				; (2)
+				sta	CTRLPF					; (3)
+
 ;.............................. COLOR .................................................
 
-				lda #DEFAULT_PF_COL			; (2)
+				ldx area					; (3)
+				lda PF_COL,x				; (4)
 				sta COLUPF					; (3)
-				lda #CAVE_BG_COL			; (2)				
+				lda BG_COL,x				; (4)				
 				ldx screen					; (3)
 				cpx lavaScreen				; (3)
 				bne darkBG					; (2/3)
@@ -473,16 +581,13 @@ drawField:		lda tileTimer				; (3)
                 bne drawPlayer				; (2/3)
 
 ;.............................. PLAYFIELD .............................................
-				lda divideTileHeight,x		; (4)
-				clc							; (2)
-				adc screenOffset			; (3)
-				tay							; (2)
-				lda PF0_CAVE,y				; (4)
+				ldy divideTileHeight,x		; (4)
+				lda pf0Buffer,y				; (4)
 				sta WSYNC					; (3)
 				sta PF0						; (3)
-				lda PF1_CAVE,y				; (4)
+				lda pf1Buffer,y				; (4)
 				sta PF1						; (3)
-				lda PF2_CAVE,y				; (4)
+				lda pf2Buffer,y				; (4)
 				sta PF2						; (3)
 
 				lda #TILE_H					; (2)
@@ -602,9 +707,18 @@ nextScreen:		lda #TILES_COUNT			; (2)
 				adc screenOffset			; (3)
 				sta screenOffset			; (3)
 				inc screen					; (5)
+				inc areaScreen				; (5)
 				lda #Y_MIN					; (2)
 				sta playerY					; (3)
 				sta prevPlayerY				; (3)
+
+ 				lda areaScreen				; (3)
+ 				cmp #SCR_PER_AREA			; (2)
+ 				bne	noCollision				; (2/3)
+ 				lda #0						; (2)
+ 				sta areaScreen				; (3)
+ 				sta screenOffset			; (3)
+				inc area					; (5)
 				jmp noCollision				; (3)
 
 prevScreen:		lda screenOffset			; (3)
@@ -612,9 +726,19 @@ prevScreen:		lda screenOffset			; (3)
 				sbc #TILES_COUNT			; (2)
 				sta screenOffset			; (3)
 				dec screen					; (5)
+				dec areaScreen				; (5)
 				lda #Y_MAX					; (2)
 				sta playerY					; (3)
 				sta prevPlayerY				; (3)
+
+ 				lda areaScreen				; (3)
+ 				cmp #$ff					; (2)
+ 				bne	noCollision				; (2/3)
+ 				lda #SCR_PER_AREA-1			; (2)
+ 				sta areaScreen				; (3)
+ 				lda (#SCR_PER_AREA-1)*#TILES_COUNT	; (2)
+ 				sta screenOffset			; (3)
+				dec area					; (5)
 
 noCollision:	sta CXCLR					; (3)
 
@@ -736,9 +860,9 @@ notInLava:		sta WSYNC					; (3)
 
 divideTileHeight									
 .POS			SET 0								
-				REPEAT #SCREEN_H + 1
-				.byte .POS / #TILE_H
-.POS			SET .POS + 1
+				REPEAT #SCREEN_H+1
+				.byte (.POS-2) / #TILE_H
+.POS			SET .POS+1
 				REPEND	
 
 multFive									
@@ -786,6 +910,7 @@ PLAYER_SPR     	.byte %00000000
 
 				include "digits.h"
 				include "playfield.h"
+				include "colors.h"
 
 ;######################################################################################
 ;   ______           _ 
