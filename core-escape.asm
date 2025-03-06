@@ -53,16 +53,16 @@
 SCREEN_H		equ #192					; Screen height in scanlines
 PLAYER_H		equ #13						; Player height in scanlines
 TILE_H			equ	#16						; Tile height in scanlines
-TILES_COUNT		equ #11						; Tiles rows per screen
+TILES_COUNT		equ #12						; Tiles rows per screen
 
-PF_COL			equ	#$00					; Playfield color
-BG_COL			equ #$02					; Background color
+DEFAULT_PF_COL	equ #$00					; Default playfield color
+CAVE_BG_COL		equ #$02					; Cave background color
 PLAYER_COL		equ #$0e					; Player color
 DEAD_PLAYER_COL	equ #$02					; Dead player color
 LAVA_COL_0		equ #$38					; First lava color
 LAVA_COL_1		equ #$28					; Second lava color
 
-LAVA_TIMER		equ #2						; Time to lava rise one scanline
+LAVA_TIMER		equ #1						; Time to lava rise one scanline
 
 X_MIN			equ #8						; Left bound
 X_MAX			equ #150					; Right bound
@@ -209,7 +209,7 @@ startFrame:		lda #0            			; (2)
 				ldx #0						; (2)
 verticalBlank:	sta WSYNC					; (3)				
 				inx							; (2)
-				cpx #7    					; (2)
+				cpx #6    					; (2)
 				bne verticalBlank			; (2/3)
 
 ;.............................. RESET .................................................
@@ -230,22 +230,24 @@ dontLavaScreen:
 				bne dontIncLava				; (2/3)
 				inc lavaHeight				; (5)
 				lda #LAVA_TIMER				; (2)
+				clc 						; (2)
+				adc lavaColor				; (3)
 				sta lavaTimer				; (3)
 				lda lavaColor				; (3)
 				eor #1						; (2)
 				sta lavaColor				; (3)
-dontIncLava:	
+dontIncLava:	sta WSYNC					; (3)
 				lda screen					; (3)
 				sec							; (2)
 				sbc lavaScreen				; (3)
 				sta temp					; (3)
-				lda #3						; (2)
+				lda #2						; (2)
 				clc							; (2)
 				sbc temp					; (3)
 				lda #0						; (2)
 				bcc	skipLavaSound			; (3)
 				ldx temp					; (3)
-				lda #11						; (2)
+				lda #7						; (2)
 				sec							; (2)
 				sbc multFive,x				; (4)
 skipLavaSound:	sta AUDV1					; (3)
@@ -373,9 +375,9 @@ scoreDigits:	ldy digitIdx0				; (3)
 				sta PF1						; (3)
 				sta PF2						; (3)
 
-				lda #PLAYER_COL					; (2)
+				lda #PLAYER_COL				; (2)
 				sta COLUPF					; (3)
-				lda #PF_COL					; (2)
+				lda #DEFAULT_PF_COL			; (2)
 				sta COLUBK					; (3)
 
 				sta WSYNC					; (3)
@@ -405,9 +407,11 @@ drawScore:		lda #%00000000				; (2)
 				cpx #10    					; (2)
 				bne drawScore				; (2/3)
 
-				lda #PF_COL					; (2)
+;.............................. COLOR .................................................
+
+				lda #DEFAULT_PF_COL			; (2)
 				sta COLUPF					; (3)
-				lda #BG_COL					; (2)				
+				lda #CAVE_BG_COL			; (2)				
 				ldx screen					; (3)
 				cpx lavaScreen				; (3)
 				bne darkBG					; (2/3)
@@ -473,12 +477,12 @@ drawField:		lda tileTimer				; (3)
 				clc							; (2)
 				adc screenOffset			; (3)
 				tay							; (2)
-				lda PF0_DATA,y				; (4)
+				lda PF0_CAVE,y				; (4)
 				sta WSYNC					; (3)
 				sta PF0						; (3)
-				lda PF1_DATA,y				; (4)
+				lda PF1_CAVE,y				; (4)
 				sta PF1						; (3)
-				lda PF2_DATA,y				; (4)
+				lda PF2_CAVE,y				; (4)
 				sta PF2						; (3)
 
 				lda #TILE_H					; (2)
@@ -781,246 +785,7 @@ PLAYER_SPR     	.byte %00000000
 ;######################################################################################
 
 				include "digits.h"
-
-PF0_DATA		
-				; Level 1
-				.byte #%00000000
-				.byte #%00000000
-				.byte #%00000000
-				.byte #%11000000
-				.byte #%11000000
-				.byte #%11000000
-				.byte #%11110000
-				.byte #%11000000
-				.byte #%10000000
-				.byte #%10000000
-				.byte #%11110000
-				.byte #%11110000
-				; Level 2
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%00000000
-				.byte #%11110000
-				.byte #%01110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%00000000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				; Level 3
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%00000000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%00000000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				; Level 4
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				; Level 5
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				; Level 6
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-				.byte #%11110000
-
-PF1_DATA		
-				; Level 1
-				.byte #%00000000
-				.byte #%00000000
-				.byte #%00100000
-				.byte #%01111111 
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111 
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				; Level 2
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%00001111
-				.byte #%11001111 
-				.byte #%00001011
-				.byte #%01000011
-				.byte #%11100011 
-				.byte #%11110011
-				.byte #%00000011
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				; Level 3
-				.byte #%11111111
-				.byte #%11111100
-				.byte #%11111100
-				.byte #%00001100
-				.byte #%11001111
-				.byte #%00001111
-				.byte #%00011100
-				.byte #%11111100
-				.byte #%11111100
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				; Level 4
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				; Level 5
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				; Level 6
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-
-PF2_DATA		
-				; Level 1
-				.byte #%00000000
-				.byte #%01000000
-				.byte #%11100000
-				.byte #%11110001
-				.byte #%11110011
-				.byte #%00110011
-				.byte #%00000011
-				.byte #%00101111
-				.byte #%11111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				; Level 2
-				.byte #%00111111
-				.byte #%00110111
-				.byte #%00000011
-				.byte #%00110001
-				.byte #%00000011
-				.byte #%11111111
-				.byte #%00000001
-				.byte #%00110001
-				.byte #%00000011
-				.byte #%00110111
-				.byte #%00111111
-				.byte #%00111111
-				; Level 3
-				.byte #%00111111
-				.byte #%00000000
-				.byte #%11111111
-				.byte #%00000000
-				.byte #%11111111
-				.byte #%00000000
-				.byte #%00101000
-				.byte #%11111111
-				.byte #%00000000
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				; Level 4
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				; Level 5
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				; Level 6
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%00111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
-				.byte #%11111111
+				include "playfield.h"
 
 ;######################################################################################
 ;   ______           _ 

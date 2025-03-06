@@ -10,9 +10,9 @@ AUDF0                    0017              (R )
 AUDF1                    0018              (R )
 AUDV0                    0019              (R )
 AUDV1                    001a              (R )
-BG_COL                   0002              (R )
+CAVE_BG_COL              0002              (R )
 COL_SOUND                0008              (R )
-collision                f263              (R )
+collision                f268              (R )
 COLUBK                   0009              (R )
 COLUP0                   0006              (R )
 COLUP1                   0007                  
@@ -27,9 +27,10 @@ CXM1P                    0001
 CXP0FB                   0002              (R )
 CXP1FB                   0003                  
 CXPPMM                   0007                  
-darkBG                   f189              (R )
+darkBG                   f18e              (R )
 DEAD_PLAYER_COL          0002              (R )
-difLavaScreen            f332              (R )
+DEFAULT_PF_COL           0000              (R )
+difLavaScreen            f337              (R )
 digitIdx0                008c              (R )
 digitIdx1                008d              (R )
 digitIdx2                008e              (R )
@@ -37,21 +38,21 @@ digitIdx3                008f              (R )
 digitPF0                 0090              (R )
 digitPF1                 0095              (R )
 digitPF2                 009a              (R )
-DIGITS                   f41c              (R )
-DIGITS_REV               f44e              (R )
+DIGITS                   f421              (R )
+DIGITS_REV               f453              (R )
 digitTemp                009f              (R )
-divideTileHeight         f344              (R )
-dontDrawnLava            f213              (R )
-dontIncLava              f06e              (R )
+divideTileHeight         f349              (R )
+dontDrawnLava            f218              (R )
+dontIncLava              f071              (R )
 dontLavaScreen           f05e              (R )
 DOWN                     0020              (R )
-drawField                f1c7              (R )
-drawPlayer               f1ed              (R )
-drawScore                f154              (R )
+drawField                f1cc              (R )
+drawPlayer               f1f2              (R )
+drawScore                f159              (R )
 ENABL                    001f                  
 ENAM0                    001d                  
 ENAM1                    001e                  
-endDrawfield             f218              (R )
+endDrawfield             f21d              (R )
 GRP0                     001b              (R )
 GRP1                     001c                  
 HMBL                     0024                  
@@ -61,7 +62,7 @@ HMM1                     0023
 HMOVE                    002a              (R )
 HMP0                     0020              (R )
 HMP1                     0021                  
-hPlayer                  f19c              (R )
+hPlayer                  f1a1              (R )
 INPT0                    0008                  
 INPT1                    0009                  
 INPT2                    000a                  
@@ -73,50 +74,64 @@ INTIM                    0284
 isPlayerDead             0085              (R )
 LAVA_COL_0               0038              (R )
 LAVA_COL_1               0028              (R )
-LAVA_TIMER               0002              (R )
+LAVA_TIMER               0001              (R )
 lavaColor                00a2              (R )
 lavaHeight               00a0              (R )
 lavaScreen               00a3              (R )
 lavaTimer                00a1              (R )
 LEFT                     0040              (R )
-LETTERS                  f480              (R )
-movement                 f2db                  
-multFive                 f405              (R )
-nextScreen               f27e              (R )
+LETTERS                  f485              (R )
+movement                 f2e0                  
+multFive                 f40a              (R )
+nextScreen               f283              (R )
 NO_ILLEGAL_OPCODES       0000 ????         (R )
-noCollision              f29f              (R )
-notDecrement             f0f2              (R )
-notIncrement             f0cc              (R )
-notInLava                f33f              (R )
-notMoveSound             f2d1              (R )
-notMovingDown            f305              (R )
-notMovingLeft            f2f9              (R )
-notMovingRight           f2ea              (R )
-notScreenInLava          f1c1              (R )
+noCollision              f2a4              (R )
+notDecrement             f0f7              (R )
+notIncrement             f0d1              (R )
+notInLava                f344              (R )
+notMoveSound             f2d6              (R )
+notMovingDown            f30a              (R )
+notMovingLeft            f2fe              (R )
+notMovingRight           f2ef              (R )
+notScreenInLava          f1c6              (R )
 NUSIZ0                   0004                  
 NUSIZ1                   0005                  
-otherLavaCol             f1bf              (R )
-otherLavaColor           f211              (R )
-overscan                 f228              (R )
+otherLavaCol             f1c4              (R )
+otherLavaColor           f216              (R )
+overscan                 f22d              (R )
 PF0                      000d              (R )
-PF0_DATA                 f485              (R )
+PF0_CAVE                 f48a              (R )
+PF0_ICE                  faba                  
+PF0_JUNGLE               f616                  
+PF0_MONTAIN              f92e                  
+PF0_ROCKS                f7a2                  
+PF0_SPACE                fc46                  
 PF1                      000e              (R )
-PF1_DATA                 f4cd              (R )
+PF1_CAVE                 f50e              (R )
+PF1_ICE                  fb3e                  
+PF1_JUNGLE               f69a                  
+PF1_MONTAIN              f9b2                  
+PF1_ROCKS                f826                  
+PF1_SPACE                fcca                  
 PF2                      000f              (R )
-PF2_DATA                 f515              (R )
-PF_COL                   0000              (R )
+PF2_CAVE                 f592              (R )
+PF2_ICE                  fbc2                  
+PF2_JUNGLE               f71e                  
+PF2_MONTAIN              fa36                  
+PF2_ROCKS                f8aa                  
+PF2_SPACE                fd4e                  
 PLAYER_COL               000e              (R )
 PLAYER_H                 000d              (R )
-PLAYER_SPR               f40f              (R )
+PLAYER_SPR               f414              (R )
 playerMove               0084              (R )
-playerSprite             f1f7              (R )
+playerSprite             f1fc              (R )
 playerX                  0080              (R )
 playerY                  0081              (R )
 prevCollided             0086              (R )
 prevPlayerX              0082              (R )
 prevPlayerY              0083              (R )
 prevScore                008b              (R )
-prevScreen               f290              (R )
+prevScreen               f295              (R )
 REFP0                    000b              (R )
 REFP1                    000c                  
 RESBL                    0014                  
@@ -130,16 +145,16 @@ RESP1                    0011
 RIGHT                    0080              (R )
 RSYNC                    0003                  
 score                    008a              (R )
-scoreChanged             f096                  
-scoreDigits              f0f6              (R )
-scoreNotChanged          f0a2              (R )
-scoreSmaller             f0a0              (R )
+scoreChanged             f09b                  
+scoreDigits              f0fb              (R )
+scoreNotChanged          f0a7              (R )
+scoreSmaller             f0a5              (R )
 screen                   0089              (R )
 SCREEN_H                 00c0              (R )
 screenOffset             0088              (R )
-skipInput                f2c5              (R )
-skipLavaSound            f086              (R )
-skipMovement             f30e              (R )
+skipInput                f2ca              (R )
+skipLavaSound            f08b              (R )
+skipMovement             f313              (R )
 startFrame               f02e              (R )
 STT_SCORE                0005              (R )
 STT_X                    0048              (R )
@@ -154,7 +169,7 @@ TIA_BASE_ADDRESS         0000              (R )
 TIA_BASE_READ_ADDRESS    0000              (R )
 TIA_BASE_WRITE_ADDRESS   0000              (R )
 TILE_H                   0010              (R )
-TILES_COUNT              000b              (R )
+TILES_COUNT              000c              (R )
 tileTimer                0087              (R )
 TIM1T                    0294                  
 TIM64T                   0296                  
