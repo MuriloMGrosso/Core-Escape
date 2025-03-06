@@ -1,4 +1,7 @@
 # Core Escape
+
+<img src="https://github.com/MuriloMGrosso/Core-Escape/blob/main/labels/Core%20Escape%20Main.jpg" width="200"/>
+
 Oh no! The lava is rising! Quick, you need to get out of here!
 In this action/adventure game, you'll need to climb caves, jungles and mountains to keep your butt safe!
 How high can you reach?
