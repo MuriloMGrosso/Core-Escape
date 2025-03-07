@@ -54,20 +54,23 @@ SCREEN_H		equ #192					; Screen height in scanlines
 PLAYER_H		equ #13						; Player height in scanlines
 TILE_H			equ	#16						; Tile height in scanlines
 TILES_COUNT		equ #12						; Tiles rows per screen
-SCR_PER_AREA	equ #2						; Telas por area
+SCR_PER_AREA	equ #8						; Screens per area
+SCR_PER_AREA_C	equ #11						; Screens per area avaliable
+MAPS_COUNT		equ #16						; Number of different maps
 
 DEFAULT_PF_COL	equ #$00					; Default playfield color
 PLAYER_COL		equ #$0e					; Player color
 DEAD_PLAYER_COL	equ #$02					; Dead player color
 LAVA_COL_0		equ #$38					; First lava color
 LAVA_COL_1		equ #$28					; Second lava color
+STT_LAVA_H		equ #20						; Initial lava height
 
 LAVA_TIMER		equ #1						; Time to lava rise one scanline
 
-X_MIN			equ #8						; Left bound
-X_MAX			equ #150					; Right bound
-Y_MIN			equ #6						; Bottom bound
-Y_MAX			equ #180					; Top bound
+X_MIN			equ #0						; Left bound
+X_MAX			equ #152					; Right bound
+Y_MIN			equ #2						; Bottom bound
+Y_MAX			equ #190					; Top bound
 
 STT_X			equ #72						; Initial player x coordinate
 STT_Y			equ #74						; Initial player y coordinate
@@ -104,10 +107,11 @@ isPlayerDead	ds 1						; Indicates whether the player is dead
 prevCollided	ds 1						; Indicates whether player collided
 
 tileTimer		ds 1						; Timer for tile changing
-screenOffset	ds 1						; Screen offset
 screen			ds 1						; Current screen
-areaScreen		ds 1						; Current area screen
+areaScreenIdx	ds 1						; Current area screen table index
 area			ds 1						; Current area
+randMap			ds 1						; Random map generator
+currentMap		ds 1						; Current map
 
 score			ds 1						; Score
 prevScore		ds 1						; Previous score
@@ -130,6 +134,8 @@ temp			ds 1 						; Temporary variable
 pf0Buffer		ds 12						; PF0 buffer
 pf1Buffer		ds 12						; PF1 buffer
 pf2Buffer		ds 12						; PF2 buffer
+
+gameStarted		ds 1						; Indicates whether the game started
 
 				seg	main
 				org $f000
@@ -157,6 +163,10 @@ reset:			CLEAN_START
 				lda #STT_Y					; (2)
 				sta playerY					; (3)
 				sta prevPlayerY				; (3)
+
+;.............................. INITIAL LAVA POSITION .................................
+				lda #STT_LAVA_H				; (2)
+				sta lavaHeight				; (3)
 
 ;.............................. INITIAL SCORE .........................................
 				lda #STT_SCORE-1			; (2)
@@ -222,10 +232,35 @@ startFrame:		lda #0            			; (2)
 		        lda #%00000001				; (2)
                 bit SWCHB					; (3)
                 beq reset					; (2/3)
-				sta WSYNC					; (3)
+
+;.............................. RIGHT WARP ............................................
+				lda #X_MAX+1				; (2)
+				clc							; (2)
+				sbc playerX					; (3)
+				bcc	continueWarp			; (2/3)
+				jmp skipWarp				; (3)
+	
+continueWarp:	lda #X_MIN-10				; (2)
+				clc							; (2)
+				sbc playerX					; (3)
+				bcc	rightWarp				; (2/3)
+				jmp skipWarp				; (3)
+				
+rightWarp:		lda #X_MAX					; (2)
+				sta playerX					; (3)
+				lda #X_MIN					; (2)
+				sta prevPlayerX				; (3)
+
+skipWarp:		sta WSYNC					; (3)
 
 ;.............................. PLAYFIELD BUFFER ......................................
-				ldy screenOffset			; (3)
+				ldx currentMap				; (3)
+				lda mapOffset,x				; (4)
+				clc							; (2)
+				adc areaScreenIdx			; (3)
+				tay							; (2)
+				ldx RAND_SCREEN,y			; (4)
+				ldy screenOffset,x			; (4)
 				ldx area					; (3)
 				beq caveBuffer				; (2/3)
 				dex							; (2)
@@ -325,6 +360,8 @@ endPlayfieldBuffer:
 				sta lavaHeight				; (3)
 				inc lavaScreen				; (5)
 dontLavaScreen:
+				lda gameStarted				; (3)
+				beq	dontIncLava				; (2/3)
 				dec lavaTimer				; (5)
 				bne dontIncLava				; (2/3)
 				inc lavaHeight				; (5)
@@ -650,9 +687,18 @@ endDrawfield:	lda #%01000010				; (2)
 				ldx #0						; (2)
 overscan:       sta WSYNC					; (3)
 				inx							; (2)
-				cpx #23						; (2)
+				cpx #21						; (2)
 				bne overscan				; (2/3)
 				sta WSYNC					; (3)
+
+;.............................. RANDOM MAP GENERATOR ..................................
+				inc randMap					; (5)
+				lda randMap					; (3)
+				cmp #MAPS_COUNT				; (2)
+				bne dontResetMap			; (2/3)
+				lda #0						; (2)
+				sta randMap					; (3)
+dontResetMap:	sta WSYNC					; (3)
 
 ;.............................. AUDIO .................................................
 				lda lavaTimer				; (3)
@@ -665,6 +711,20 @@ overscan:       sta WSYNC					; (3)
 				lda #0						; (2)
 				sta AUDC0					; (3)
 				sta WSYNC					; (3)
+
+;.............................. LEFT WARP .............................................
+				lda #X_MAX+1				; (2)
+				clc							; (2)
+				sbc playerX					; (3)
+				bcc	leftWarp				; (2/3)
+				jmp skipLeftWarp			; (3)
+	
+leftWarp:		lda #X_MIN					; (2)
+				sta playerX					; (3)
+				lda #X_MAX					; (2)
+				sta prevPlayerX				; (3)
+
+skipLeftWarp:	sta WSYNC					; (3)
 
 ;.............................. CHANGE SCREEN .........................................
 				lda #Y_MAX					; (2)
@@ -702,42 +762,33 @@ collision:		lda prevPlayerX				; (3)
 				sta AUDC0					; (3)
 				jmp noCollision				; (3)
 
-nextScreen:		lda #TILES_COUNT			; (2)
-				clc							; (2)
-				adc screenOffset			; (3)
-				sta screenOffset			; (3)
-				inc screen					; (5)
-				inc areaScreen				; (5)
+nextScreen:		inc screen					; (5)
+				inc areaScreenIdx			; (5)
 				lda #Y_MIN					; (2)
 				sta playerY					; (3)
 				sta prevPlayerY				; (3)
 
- 				lda areaScreen				; (3)
+ 				lda areaScreenIdx			; (3)
  				cmp #SCR_PER_AREA			; (2)
  				bne	noCollision				; (2/3)
  				lda #0						; (2)
- 				sta areaScreen				; (3)
- 				sta screenOffset			; (3)
+ 				sta areaScreenIdx			; (3)
 				inc area					; (5)
+				lda randMap					; (3)
+				sta currentMap				; (3)
 				jmp noCollision				; (3)
 
-prevScreen:		lda screenOffset			; (3)
-				sec							; (2)
-				sbc #TILES_COUNT			; (2)
-				sta screenOffset			; (3)
-				dec screen					; (5)
-				dec areaScreen				; (5)
+prevScreen:		dec screen					; (5)
+				dec areaScreenIdx			; (5)
 				lda #Y_MAX					; (2)
 				sta playerY					; (3)
 				sta prevPlayerY				; (3)
 
- 				lda areaScreen				; (3)
+ 				lda areaScreenIdx			; (3)
  				cmp #$ff					; (2)
  				bne	noCollision				; (2/3)
  				lda #SCR_PER_AREA-1			; (2)
- 				sta areaScreen				; (3)
- 				lda (#SCR_PER_AREA-1)*#TILES_COUNT	; (2)
- 				sta screenOffset			; (3)
+ 				sta areaScreenIdx			; (3)
 				dec area					; (5)
 
 noCollision:	sta CXCLR					; (3)
@@ -778,6 +829,16 @@ notMoveSound:
 				ldx playerX					; (3)
 				ldy playerY					; (3)
 
+				lda playerMove				; (3)
+				beq skipMovement			; (2/3)
+
+				lda gameStarted				; (3)
+				bne	skipInitialGeneration	; (2/3)
+				lda randMap					; (3)
+				sta currentMap				; (3)
+				lda #1						; (2)
+				sta gameStarted				; (3)
+skipInitialGeneration:
 				lda isPlayerDead			; (3)
 				bne	skipMovement			; (2/3)
 
@@ -870,7 +931,21 @@ multFive
 				REPEAT #10
 				.byte .POS * #5
 .POS			SET .POS + 1
-				REPEND	
+				REPEND
+
+screenOffset
+.POS			SET 0								
+				REPEAT #SCR_PER_AREA_C
+				.byte .POS * #TILES_COUNT
+.POS			SET .POS + 1
+				REPEND
+
+mapOffset
+.POS			SET 0								
+				REPEAT #MAPS_COUNT
+				.byte .POS * #SCR_PER_AREA
+.POS			SET .POS + 1
+				REPEND
 
 ;######################################################################################
 ;    _____            _ _            
@@ -911,6 +986,7 @@ PLAYER_SPR     	.byte %00000000
 				include "digits.h"
 				include "playfield.h"
 				include "colors.h"
+				include "random_rooms.h"
 
 ;######################################################################################
 ;   ______           _ 
